@@ -25,7 +25,35 @@ import {
   ChevronRight,
   RefreshCw,
 } from 'lucide-react';
+import { ChaiLogo } from '@/components/brand/ChaiLogo';
 import { STUDY_MATERIALS_DATA, EXAM_UPDATES_DATA } from '@/lib/data';
+
+// Ashoka Stambha Seal Emblem (as used on the main navbar)
+function NavbarSealEmblem({ size = 'sm' }: { size?: 'sm' | 'md' }) {
+  const dims = size === 'md' ? 'w-7 h-8' : 'w-6 h-7';
+  return (
+    <div className={`${dims} text-[#1C2C5B] shrink-0 opacity-90`}>
+      <svg viewBox="0 0 100 125" fill="currentColor" className="w-full h-full drop-shadow-2xs">
+        <circle cx="50" cy="50" r="46" fill="#1C2C5B" fillOpacity="0.08" stroke="#1C2C5B" strokeWidth="3" />
+        <circle cx="50" cy="50" r="14" fill="none" stroke="#1C2C5B" strokeWidth="2.5" />
+        <circle cx="50" cy="50" r="3" fill="#1C2C5B" />
+        {Array.from({ length: 8 }).map((_, idx) => (
+          <line
+            key={idx}
+            x1="50"
+            y1="50"
+            x2={50 + 13 * Math.cos((idx * Math.PI) / 4)}
+            y2={50 + 13 * Math.sin((idx * Math.PI) / 4)}
+            stroke="#1C2C5B"
+            strokeWidth="2"
+          />
+        ))}
+        <path d="M36 28 L50 16 L64 28 L58 35 L42 35 Z" fill="#1C2C5B" />
+        <rect x="25" y="74" width="50" height="6" rx="2" fill="#1C2C5B" />
+      </svg>
+    </div>
+  );
+}
 
 export default function SuperadminPage() {
   // Authentication State
@@ -93,7 +121,7 @@ export default function SuperadminPage() {
 
     setIsLoading(true);
 
-    // Secure authentication check (lightweight mock for dashboard demo)
+    // Secure authentication check
     setTimeout(() => {
       const isValidUser =
         username.toLowerCase() === 'superadmin@chairevision.com' ||
@@ -134,29 +162,25 @@ export default function SuperadminPage() {
   };
 
   // ==========================================
-  // VIEW: AUTHENTICATED SUPERADMIN COMMAND CENTER (LIGHT MODE)
+  // VIEW: AUTHENTICATED SUPERADMIN COMMAND CENTER (LIGHT MODE + POPPINS)
   // ==========================================
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
+      <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-['Poppins',sans-serif] selection:bg-blue-100 selection:text-blue-900">
         {/* Top Command Bar */}
         <header className="border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-2xs">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-700 via-indigo-700 to-purple-600 flex items-center justify-center shadow-xs">
-                  <ShieldCheck className="w-4 h-4 text-white" />
+              <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group focus:outline-hidden">
+                <div className="hidden sm:flex items-center gap-2">
+                  <NavbarSealEmblem size="sm" />
+                  <div className="h-6 w-px bg-slate-200" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-[#1E2653] text-sm tracking-tight">Chai Revision</span>
-                    <span className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
-                      SUPERADMIN
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 font-medium">Control Center v2.4 • Maharashtra Region</p>
-                </div>
-              </div>
+                <ChaiLogo variant="dark" size="sm" showTagline={false} />
+                <span className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-sm uppercase tracking-wider ml-1">
+                  SUPERADMIN
+                </span>
+              </Link>
             </div>
 
             <div className="flex items-center gap-3">
@@ -479,10 +503,10 @@ export default function SuperadminPage() {
   }
 
   // ==========================================
-  // VIEW: SUPERADMIN LOGIN PORTAL (LIGHT MODE ONLY)
+  // VIEW: SUPERADMIN LOGIN PORTAL (LIGHT MODE + POPPINS FONT + NAVBAR LOGO)
   // ==========================================
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-blue-100 selection:text-blue-900 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-blue-100 selection:text-blue-900 relative overflow-hidden font-['Poppins',sans-serif]">
       {/* Background Soft Gradients & Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-blue-100/60 via-purple-100/40 to-transparent blur-3xl pointer-events-none -z-0" />
       <div className="absolute -bottom-32 -left-32 w-[450px] h-[450px] bg-indigo-100/50 rounded-full blur-3xl pointer-events-none -z-0" />
@@ -498,23 +522,26 @@ export default function SuperadminPage() {
         }}
       />
 
-      {/* Top Navbar Minimal */}
-      <header className="relative z-10 px-4 sm:px-8 py-4 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-md shadow-2xs">
-        <Link href="/" className="group flex items-center gap-2.5 transition-transform hover:scale-[1.01]">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#1C2C5B] to-blue-700 p-0.5 shadow-xs">
-            <div className="w-full h-full bg-white rounded-[6px] flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-blue-700" />
-            </div>
+      {/* Top Navbar Minimal with Exact Navbar Logo */}
+      <header className="relative z-10 px-4 sm:px-8 py-3.5 flex items-center justify-between border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-2xs">
+        <Link href="/" className="group flex items-center gap-2.5 sm:gap-3.5 transition-transform hover:scale-[1.01]">
+          {/* Government seal emblem badge (same as navbar) */}
+          <div className="hidden sm:flex items-center gap-2.5">
+            <NavbarSealEmblem size="sm" />
+            <div className="h-6 w-px bg-slate-200/90" />
           </div>
-          <div className="flex flex-col text-left">
-            <span className="text-sm font-extrabold text-[#1E2653] tracking-tight">Chai Revision</span>
-            <span className="text-[10px] text-slate-500 font-mono font-medium tracking-wider">SUPERADMIN PORTAL</span>
-          </div>
+
+          {/* ChaiLogo (same as navbar) */}
+          <ChaiLogo variant="dark" size="sm" showTagline={false} />
+
+          <span className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-sm uppercase tracking-wider ml-1">
+            SUPERADMIN
+          </span>
         </Link>
 
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-800 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white shadow-2xs transition-all"
+          className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-800 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white shadow-2xs transition-all font-medium"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>मुख्य संकेतस्थळ</span>
@@ -524,18 +551,26 @@ export default function SuperadminPage() {
       {/* Center Login Container */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-[440px] space-y-5">
-          {/* Superadmin Badge Header */}
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-800 text-[11px] font-bold uppercase tracking-widest shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-              <span>प्रशासकीय नियंत्रण कक्ष • Superadmin</span>
+          {/* Superadmin Card Header with Central Navbar Brand Logo */}
+          <div className="text-center space-y-3">
+            <div className="flex justify-center items-center gap-3">
+              <NavbarSealEmblem size="md" />
+              <div className="h-8 w-px bg-slate-200" />
+              <ChaiLogo variant="dark" size="md" showTagline={false} />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E2653] tracking-tight">
-              Sign In to Command Center
-            </h1>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-              स्टडी मटेरियल व्यवस्थापन, थेट महसूल आणि परीक्षा परिपत्रक नियंत्रणासाठी सुरक्षित प्रशासन प्रवेश.
-            </p>
+
+            <div className="space-y-1 pt-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-800 text-[11px] font-bold uppercase tracking-widest shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                <span>प्रशासकीय नियंत्रण कक्ष • Superadmin</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E2653] tracking-tight">
+                Sign In to Command Center
+              </h1>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                स्टडी मटेरियल व्यवस्थापन, थेट महसूल आणि परीक्षा परिपत्रक नियंत्रणासाठी सुरक्षित प्रशासन प्रवेश.
+              </p>
+            </div>
           </div>
 
           {/* Login Card */}
@@ -587,7 +622,7 @@ export default function SuperadminPage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="superadmin@chairevision.com"
-                    className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all shadow-2xs"
+                    className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all shadow-2xs font-['Poppins',sans-serif]"
                   />
                 </div>
               </div>
@@ -672,7 +707,7 @@ export default function SuperadminPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20 cursor-pointer active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                className="w-full py-3 px-4 bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20 cursor-pointer active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed mt-2 font-['Poppins',sans-serif]"
               >
                 {isLoading ? (
                   <>
