@@ -26,6 +26,7 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { MaterialsView } from '@/components/views/MaterialsView';
 import { CoursesView } from '@/components/views/CoursesView';
 import { PYQView } from '@/components/views/PYQView';
+import { MCQQuizView } from '@/components/views/MCQQuizView';
 import { ExamUpdatesView } from '@/components/views/ExamUpdatesView';
 import { ImportantDatesView } from '@/components/views/ImportantDatesView';
 import { CurrentAffairsView } from '@/components/views/CurrentAffairsView';
@@ -81,6 +82,7 @@ function MainContent() {
         {activeView === 'materials' && <MaterialsView />}
         {activeView === 'courses' && <CoursesView />}
         {activeView === 'pyq' && <PYQView />}
+        {activeView === 'quiz' && <MCQQuizView />}
         {activeView === 'exam-updates' && <ExamUpdatesView />}
         {activeView === 'important-dates' && <ImportantDatesView />}
         {activeView === 'current-affairs' && <CurrentAffairsView />}

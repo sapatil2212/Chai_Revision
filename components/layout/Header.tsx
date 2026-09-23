@@ -53,10 +53,11 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const navItems: { id: string; label: string; free?: boolean }[] = [
+  const navItems: { id: string; label: string; free?: boolean; badge?: string }[] = [
     { id: 'materials', label: t.nav.materials },
-    { id: 'courses', label: t.nav.courses },
+    { id: 'quiz', label: lang === 'en' ? 'MCQ Quiz' : 'MCQ सराव / Quiz', badge: 'Live' },
     { id: 'pyq', label: t.nav.pyq },
+    { id: 'courses', label: t.nav.courses },
     { id: 'current-affairs', label: t.nav.currentAffairs },
     { id: 'free-resources', label: t.nav.freeResources, free: true },
     { id: 'exam-updates', label: t.nav.examUpdates },
@@ -128,6 +129,11 @@ export function Header() {
                   {item.free && (
                     <span className="text-[9px] bg-emerald-100/90 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider">
                       Free
+                    </span>
+                  )}
+                  {item.badge && (
+                    <span className="text-[9px] bg-blue-100/90 text-blue-700 border border-blue-200 px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider">
+                      {item.badge}
                     </span>
                   )}
                 </button>
@@ -235,6 +241,11 @@ export function Header() {
                 {item.free && (
                   <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
                     FREE
+                  </span>
+                )}
+                {item.badge && (
+                  <span className="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                    {item.badge}
                   </span>
                 )}
               </button>

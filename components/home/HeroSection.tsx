@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Sparkles,
   Search,
+  Clock,
   ChevronDown,
 } from 'lucide-react';
 
@@ -101,8 +102,16 @@ export function HeroSection() {
               </button>
 
               <button
+                onClick={() => navigateTo('quiz')}
+                className="px-4 py-2.5 bg-white/90 hover:bg-white text-slate-800 hover:text-blue-900 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition-all border border-blue-200/90 shadow-2xs cursor-pointer"
+              >
+                <Clock className="w-4 h-4 text-amber-600" />
+                <span>MCQ सराव / Timed Quiz</span>
+              </button>
+
+              <button
                 onClick={() => navigateTo('free-resources')}
-                className="px-4 py-2.5 bg-white/90 hover:bg-white text-slate-700 hover:text-blue-800 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition-all border border-slate-200/90 shadow-2xs cursor-pointer"
+                className="px-4 py-2.5 bg-white/80 hover:bg-white text-slate-700 hover:text-blue-800 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition-all border border-slate-200/90 shadow-2xs cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-emerald-600" />
                 <span>मोफत सराव व PYQ</span>
