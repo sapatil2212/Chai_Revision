@@ -15,13 +15,11 @@ import {
   Terminal,
   Activity,
   Server,
-  Database,
   Users,
   BookOpen,
   TrendingUp,
   LogOut,
   ArrowLeft,
-  ChevronRight,
   RefreshCw,
 } from 'lucide-react';
 import { ChaiLogo } from '@/components/brand/ChaiLogo';
@@ -95,7 +93,6 @@ export default function SuperadminPage() {
     }
   };
 
-
   // Submit Handler
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,11 +100,11 @@ export default function SuperadminPage() {
     setSuccessMsg('');
 
     if (!username.trim()) {
-      setErrorMsg('कृपया Superadmin Username किंवा Email प्रविष्ट करा.');
+      setErrorMsg('Please enter Superadmin Username or Email.');
       return;
     }
     if (!password) {
-      setErrorMsg('कृपया पासवर्ड प्रविष्ट करा.');
+      setErrorMsg('Please enter your password.');
       return;
     }
 
@@ -126,7 +123,7 @@ export default function SuperadminPage() {
 
       if (isValidUser && isValidPass) {
         setIsLoading(false);
-        setSuccessMsg('प्रमाणीकरण यशस्वी! Admin Console मध्ये प्रवेश करत आहोत...');
+        setSuccessMsg('Authentication successful! Entering Admin Console...');
         if (rememberMe) {
           localStorage.setItem('chai_superadmin_auth', 'true');
           localStorage.setItem('chai_superadmin_user', username);
@@ -137,7 +134,7 @@ export default function SuperadminPage() {
         }, 800);
       } else {
         setIsLoading(false);
-        setErrorMsg('अवैध Superadmin क्रेडेंशियल्स. कृपया योग्य तपशील प्रविष्ट करा.');
+        setErrorMsg('Invalid Superadmin credentials. Please verify your details.');
       }
     }, 850);
   };
@@ -154,7 +151,7 @@ export default function SuperadminPage() {
   };
 
   // ==========================================
-  // VIEW: AUTHENTICATED SUPERADMIN COMMAND CENTER (LIGHT MODE + POPPINS)
+  // VIEW: AUTHENTICATED SUPERADMIN COMMAND CENTER (ENGLISH + LIGHT MODE + POPPINS)
   // ==========================================
   if (isAuthenticated) {
     return (
@@ -178,10 +175,10 @@ export default function SuperadminPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/"
-                className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-700 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white transition-colors shadow-2xs"
+                className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-700 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white transition-colors shadow-2xs font-medium"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>मुख्य वेबसाईट पाहा</span>
+                <span>View Public Website</span>
               </Link>
 
               <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium font-mono">
@@ -194,7 +191,7 @@ export default function SuperadminPage() {
                 className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>लॉगआउट</span>
+                <span>Sign Out</span>
               </button>
             </div>
           </div>
@@ -213,7 +210,7 @@ export default function SuperadminPage() {
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                सिस्टम डॅशबोर्ड
+                System Overview
               </button>
               <button
                 onClick={() => setDashboardTab('materials')}
@@ -223,7 +220,7 @@ export default function SuperadminPage() {
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                स्टडी मटेरियल्स व्यवस्थापन ({STUDY_MATERIALS_DATA.length})
+                Study Materials ({STUDY_MATERIALS_DATA.length})
               </button>
               <button
                 onClick={() => setDashboardTab('updates')}
@@ -233,7 +230,7 @@ export default function SuperadminPage() {
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                परीक्षा परिपत्रके ({EXAM_UPDATES_DATA.length})
+                Exam Circulars ({EXAM_UPDATES_DATA.length})
               </button>
               <button
                 onClick={() => setDashboardTab('logs')}
@@ -243,12 +240,12 @@ export default function SuperadminPage() {
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                सुरक्षा व ऑडिट लॉग्ज
+                Audit & Security Logs
               </button>
             </div>
 
             <div className="text-xs text-slate-500 flex items-center gap-2 font-mono">
-              <span className="text-slate-400">लॉग इन:</span>
+              <span className="text-slate-400">Logged in as:</span>
               <span className="text-blue-900 font-semibold">{username || 'superadmin'}</span>
             </div>
           </div>
@@ -257,43 +254,43 @@ export default function SuperadminPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2 shadow-xs">
               <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>एकूण विद्यार्थी नोंदणी</span>
+                <span>Total Registered Students</span>
                 <Users className="w-4 h-4 text-blue-600" />
               </div>
-              <div className="text-2xl font-black text-[#1E2653]">५४,२८०+</div>
+              <div className="text-2xl font-black text-[#1E2653]">54,280+</div>
               <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
-                <span>+१४.२% या आठवड्यात वाढ</span>
+                <span>+14.2% this week</span>
               </div>
             </div>
 
             <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2 shadow-xs">
               <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>डिजिटल नोट्स डाऊनलोड्स</span>
+                <span>Digital Notes Downloads</span>
                 <BookOpen className="w-4 h-4 text-indigo-600" />
               </div>
-              <div className="text-2xl font-black text-[#1E2653]">१,८६,४२०</div>
+              <div className="text-2xl font-black text-[#1E2653]">186,420</div>
               <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
-                <span>+२२.५% सक्रिय सत्रे</span>
+                <span>+22.5% active sessions</span>
               </div>
             </div>
 
             <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2 shadow-xs">
               <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>सुरक्षित महसूल (चालू महिना)</span>
+                <span>Gross Revenue (Current Month)</span>
                 <Activity className="w-4 h-4 text-purple-600" />
               </div>
-              <div className="text-2xl font-black text-[#1E2653]">₹ ३,९४,८५०</div>
-              <div className="text-[11px] text-indigo-600 font-mono font-medium">९९.९% पेमेंट यश दर</div>
+              <div className="text-2xl font-black text-[#1E2653]">₹ 3,94,850</div>
+              <div className="text-[11px] text-indigo-600 font-mono font-medium">99.9% payment success rate</div>
             </div>
 
             <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2 shadow-xs">
               <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>क्लाउड सर्व्हर स्थिती</span>
+                <span>Cloud Server Status</span>
                 <Server className="w-4 h-4 text-emerald-600" />
               </div>
-              <div className="text-2xl font-black text-emerald-700">१००% Active</div>
+              <div className="text-2xl font-black text-emerald-700">100% Operational</div>
               <div className="text-[11px] text-slate-500 font-mono">Latency: 28ms • SSL Verified</div>
             </div>
           </div>
@@ -306,13 +303,13 @@ export default function SuperadminPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-[#1E2653] flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-blue-600" />
-                    <span>सध्या सक्रिय असलेले महाराष्ट्र स्पर्धा परीक्षा साहित्य</span>
+                    <span>Active Maharashtra Competitive Exam Materials</span>
                   </h3>
                   <button
                     onClick={() => setDashboardTab('materials')}
                     className="text-xs text-blue-700 hover:text-blue-900 font-semibold cursor-pointer"
                   >
-                    सर्व पाहा →
+                    View All →
                   </button>
                 </div>
 
@@ -320,9 +317,9 @@ export default function SuperadminPage() {
                   {STUDY_MATERIALS_DATA.slice(0, 5).map((item) => (
                     <div key={item.id} className="py-3 flex items-center justify-between gap-4">
                       <div className="min-w-0">
-                        <div className="text-xs font-semibold text-slate-900 truncate">{item.title.mr}</div>
+                        <div className="text-xs font-semibold text-slate-900 truncate">{item.title.en || item.title.mr}</div>
                         <div className="text-[11px] text-slate-500 font-mono">
-                          {item.exam} • {item.subject} • {item.pages} पृष्ठे
+                          {item.exam} • {item.subject} • {item.pages} pages
                         </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
@@ -340,14 +337,14 @@ export default function SuperadminPage() {
               <div className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-5 space-y-4 shadow-xs">
                 <h3 className="text-sm font-bold text-[#1E2653] flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>सुरक्षा व सिस्टम हेल्थ</span>
+                  <span>Security & System Health</span>
                 </h3>
 
                 <div className="space-y-3 text-xs">
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>डेटाबेस कनेक्शन</span>
-                      <span className="text-emerald-700 font-mono font-semibold">सक्रिय (Postgres)</span>
+                      <span>Database Connection</span>
+                      <span className="text-emerald-700 font-mono font-semibold">Active (PostgreSQL)</span>
                     </div>
                     <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                       <div className="bg-emerald-600 h-full w-[94%]" />
@@ -356,7 +353,7 @@ export default function SuperadminPage() {
 
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>API थ्रॉटल लिमिट्स</span>
+                      <span>API Rate Limits</span>
                       <span className="text-blue-700 font-mono font-semibold">0/10,000 req/min</span>
                     </div>
                     <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
@@ -366,10 +363,10 @@ export default function SuperadminPage() {
 
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>सुरक्षित 256-Bit SSL</span>
-                      <span className="text-emerald-700 font-mono font-semibold">प्रमाणित</span>
+                      <span>256-Bit SSL Encryption</span>
+                      <span className="text-emerald-700 font-mono font-semibold">Verified</span>
                     </div>
-                    <p className="text-[10px] text-slate-500">सर्व ऑपरेशन्स ऑडिट लॉगमध्ये स्वयंचलित नोंदवले जातात.</p>
+                    <p className="text-[10px] text-slate-500">All administrative operations are encrypted and securely logged.</p>
                   </div>
                 </div>
 
@@ -378,7 +375,7 @@ export default function SuperadminPage() {
                     href="/"
                     className="w-full py-2.5 bg-[#1C2C5B] hover:bg-blue-900 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs"
                   >
-                    <span>पोर्टल डॅशबोर्ड सुरू करा</span>
+                    <span>Go to Public Website</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -390,11 +387,11 @@ export default function SuperadminPage() {
             <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-[#1E2653]">डिजिटल नोट्स व्यवस्थापन</h3>
-                  <p className="text-xs text-slate-500">महाराष्ट्र स्पर्धा परीक्षा डिजिटल नोट्स यादी व किंमत नियंत्रण</p>
+                  <h3 className="text-base font-bold text-[#1E2653]">Study Materials Directory</h3>
+                  <p className="text-xs text-slate-500">Catalog of digital revision notes, subjects, and pricing controls</p>
                 </div>
                 <div className="text-xs font-mono text-blue-800 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg font-semibold">
-                  एकूण: {STUDY_MATERIALS_DATA.length} पुस्तके
+                  Total: {STUDY_MATERIALS_DATA.length} Titles
                 </div>
               </div>
 
@@ -402,18 +399,18 @@ export default function SuperadminPage() {
                 <table className="w-full text-left text-xs">
                   <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 font-mono uppercase text-[10px]">
                     <tr>
-                      <th className="py-2.5 px-3">शीर्षक</th>
-                      <th className="py-2.5 px-3">परीक्षा श्रेणी</th>
-                      <th className="py-2.5 px-3">विषय</th>
-                      <th className="py-2.5 px-3">किंमत</th>
-                      <th className="py-2.5 px-3">पृष्ठे</th>
-                      <th className="py-2.5 px-3">रेटिंग</th>
+                      <th className="py-2.5 px-3">Title</th>
+                      <th className="py-2.5 px-3">Exam Category</th>
+                      <th className="py-2.5 px-3">Subject</th>
+                      <th className="py-2.5 px-3">Price</th>
+                      <th className="py-2.5 px-3">Pages</th>
+                      <th className="py-2.5 px-3">Rating</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700">
                     {STUDY_MATERIALS_DATA.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-3 font-semibold text-slate-900 max-w-xs truncate">{item.title.mr}</td>
+                        <td className="py-3 px-3 font-semibold text-slate-900 max-w-xs truncate">{item.title.en || item.title.mr}</td>
                         <td className="py-3 px-3">
                           <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[10px] font-medium">
                             {item.exam}
@@ -434,8 +431,8 @@ export default function SuperadminPage() {
           {dashboardTab === 'updates' && (
             <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-4 shadow-xs">
               <div>
-                <h3 className="text-base font-bold text-[#1E2653]">परीक्षा परिपत्रके व अधिकृत अपडेट्स</h3>
-                <p className="text-xs text-slate-500">विद्यार्थ्यांना दिसणारे MPSC, पोलीस भरती व ZP परिपत्रके</p>
+                <h3 className="text-base font-bold text-[#1E2653]">Exam Circulars & Official Announcements</h3>
+                <p className="text-xs text-slate-500">Live feed of notifications broadcasted to Maharashtra aspirants</p>
               </div>
 
               <div className="space-y-3">
@@ -450,17 +447,17 @@ export default function SuperadminPage() {
                         <span className="text-slate-300">•</span>
                         <span className="text-[11px] text-slate-500 font-mono">{update.publishedDate}</span>
                       </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">{update.title.mr}</h4>
-                      <p className="text-xs text-slate-600">{update.shortSummary.mr}</p>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">{update.title.en || update.title.mr}</h4>
+                      <p className="text-xs text-slate-600">{update.shortSummary.en || update.shortSummary.mr}</p>
                     </div>
 
                     <a
                       href={update.officialLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold shrink-0 transition-colors shadow-2xs"
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold shrink-0 transition-colors shadow-2xs font-medium"
                     >
-                      अधिकृत लिंक ↗
+                      Official Portal ↗
                     </a>
                   </div>
                 ))}
@@ -473,7 +470,7 @@ export default function SuperadminPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-[#1E2653] font-sans flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-blue-600" />
-                  <span>सिस्टम सुरक्षा व ऑडिट लॉग्स</span>
+                  <span>System Security & Audit Logs</span>
                 </h3>
                 <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 font-semibold">
                   Real-time Stream
@@ -495,7 +492,7 @@ export default function SuperadminPage() {
   }
 
   // ==========================================
-  // VIEW: SUPERADMIN LOGIN PORTAL (LIGHT MODE + POPPINS FONT + NAVBAR LOGO)
+  // VIEW: SUPERADMIN LOGIN PORTAL (ENGLISH + LIGHT MODE + POPPINS FONT + NAVBAR LOGO)
   // ==========================================
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-blue-100 selection:text-blue-900 relative overflow-hidden font-['Poppins',sans-serif]">
@@ -536,7 +533,7 @@ export default function SuperadminPage() {
           className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-800 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white shadow-2xs transition-all font-medium"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>मुख्य संकेतस्थळ</span>
+          <span>Main Website</span>
         </Link>
       </header>
 
@@ -580,7 +577,7 @@ export default function SuperadminPage() {
               {/* Username Field */}
               <div className="space-y-1.5 text-left">
                 <label className="block text-xs font-semibold text-slate-700">
-                  Superadmin Username किंवा Email <span className="text-rose-500">*</span>
+                  Superadmin Username or Email <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -605,7 +602,7 @@ export default function SuperadminPage() {
                   </label>
                   {capsLockActive && (
                     <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-1 font-mono font-medium">
-                      <span>⚠ CapsLock चालू आहे</span>
+                      <span>⚠ CapsLock is ON</span>
                     </span>
                   )}
                 </div>
@@ -627,7 +624,7 @@ export default function SuperadminPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
-                    title={showPassword ? 'पासवर्ड लपवा' : 'पासवर्ड दाखवा'}
+                    title={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -637,7 +634,7 @@ export default function SuperadminPage() {
               {/* Optional 2FA PIN / Passkey */}
               <div className="space-y-1.5 text-left">
                 <label className="block text-xs font-medium text-slate-600">
-                  Admin Security PIN <span className="text-slate-400 text-[10px]">(ऐच्छिक / 4-Digit)</span>
+                  Admin Security PIN <span className="text-slate-400 text-[10px]">(Optional / 4-Digit)</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -648,7 +645,7 @@ export default function SuperadminPage() {
                     maxLength={6}
                     value={adminPin}
                     onChange={(e) => setAdminPin(e.target.value)}
-                    placeholder="उदा. 9821"
+                    placeholder="e.g. 9821"
                     className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all font-mono shadow-2xs"
                   />
                 </div>
@@ -663,7 +660,7 @@ export default function SuperadminPage() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="w-4 h-4 rounded-sm border-slate-300 text-blue-700 focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-xs text-slate-600">हे सुरक्षित डिव्हाइस लक्षात ठेवा</span>
+                  <span className="text-xs text-slate-600">Remember this device</span>
                 </label>
               </div>
 
@@ -676,12 +673,12 @@ export default function SuperadminPage() {
                 {isLoading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                    <span>प्रमाणीकरण चालू आहे...</span>
+                    <span>Authenticating...</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4 text-white" />
-                    <span>Superadmin Console मध्ये प्रवेश करा</span>
+                    <span>Sign In to Superadmin Console</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
@@ -693,7 +690,7 @@ export default function SuperadminPage() {
 
       {/* Minimal Footer */}
       <footer className="relative z-10 px-4 py-4 text-center text-xs text-slate-500 border-t border-slate-200/80 bg-white/60">
-        <p>© 2026 Chai Revision (महाराष्ट्र स्पर्धा परीक्षा मंच). सर्व हक्क राखीव.</p>
+        <p>© 2026 Chai Revision. All rights reserved.</p>
       </footer>
     </div>
   );
