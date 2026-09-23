@@ -58,9 +58,9 @@ export function HeroSection() {
 
             {/* Main Headline */}
             <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-[#1E2653] tracking-tight leading-[1.18]">
-                स्पर्धा परीक्षेच्या अचूक तयारीसाठी तुमचा{' '}
-                <span className="text-blue-700">Smart Study Companion</span>
+              <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-[#1E2653] tracking-tight leading-[1.36] sm:leading-[1.4] lg:leading-[1.44]">
+                <span className="block mb-1.5 sm:mb-2">स्पर्धा परीक्षेच्या अचूक तयारीसाठी तुमचा</span>
+                <span className="text-blue-700 block">Smart Study Companion</span>
               </h1>
             </div>
 
