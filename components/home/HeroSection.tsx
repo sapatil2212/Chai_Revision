@@ -25,7 +25,7 @@ export function HeroSection() {
   return (
     <section
       id="hero-section"
-      className="relative overflow-hidden bg-gradient-to-r from-[#FDF2F8]/95 via-[#FAF5FF]/90 to-[#F3E8FF]/85 pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-12 sm:pb-16 border-b border-purple-100/70"
+      className="relative overflow-hidden bg-gradient-to-r from-[#FDF2F8]/95 via-[#FAF5FF]/90 to-[#F3E8FF]/85 pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-6 sm:pb-8 border-b border-purple-100/70"
     >
       {/* Background Soft Glows & Subtle Grid */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-pink-200/25 rounded-full blur-3xl pointer-events-none -z-0" />
@@ -142,35 +142,8 @@ export function HeroSection() {
 
         </div>
 
-        {/* Minimalist Trust & Toppers Endorsement Strip - Faint Gray Line Touched by Image Bottom */}
-        <div className="border-t border-slate-200/90 pt-6 sm:pt-7">
-          <p className="text-center text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
-            {lang === 'mr'
-              ? 'महाराष्ट्रातील अग्रणी अभ्यासक व टॉपर्स मंचांद्वारे विश्वासाने वापरले जाणारे प्लॅटफॉर्म'
-              : 'Validated by leading toppers forums, academy faculties & mentor circles'}
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-slate-700">
-            {[
-              { name: 'MPSC Toppers Forum', sub: 'पुणे व मुंबई' },
-              { name: 'Sahyadri Study Circle', sub: 'नाशिक' },
-              { name: 'Chanakya Mentors Forum', sub: 'छत्रपती संभाजीनगर' },
-              { name: 'TCS / IBPS Research Hub', sub: 'सरळसेवा गट' },
-            ].map((partner, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 bg-white/80 border border-slate-200/70 px-3 py-1 rounded-full shadow-2xs hover:border-slate-300 transition-all"
-              >
-                <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 font-bold text-[10px] flex items-center justify-center shrink-0 border border-blue-100">
-                  {partner.name.charAt(0)}
-                </div>
-                <p className="text-xs font-medium text-slate-700 leading-tight">
-                  {partner.name} <span className="text-[10px] text-slate-400">({partner.sub})</span>
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Faint Gray Line Touched by Image Bottom */}
+        <div className="border-t border-slate-200/90" />
 
         {/* Animated Scroll Down Indicator */}
         <div className="mt-6 sm:mt-8 flex justify-center">
