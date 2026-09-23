@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useApp } from '@/lib/store';
 import { ChaiLogo } from '@/components/brand/ChaiLogo';
 import {
@@ -226,7 +227,7 @@ export function Footer() {
         <div className="border-t border-slate-200/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>© २०२६ Chai Revision (चाय रिव्हिजन). सर्व हक्क राखीव. Made with care for Maharashtra Aspirants.</p>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span>भाषा:</span>
             <button onClick={() => setLang('mr')} className="hover:text-blue-600 font-semibold cursor-pointer">
               मराठी
@@ -239,6 +240,15 @@ export function Footer() {
             <button onClick={() => setLang('hi')} className="hover:text-blue-600 font-semibold cursor-pointer">
               हिन्दी
             </button>
+            <span>•</span>
+            <Link
+              href="/superadmin"
+              className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+              title="Superadmin Portal"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+              <span>प्रशासन पोर्टल</span>
+            </Link>
           </div>
         </div>
       </div>

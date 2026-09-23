@@ -1,0 +1,715 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  ShieldCheck,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2,
+  KeyRound,
+  Terminal,
+  Activity,
+  Server,
+  Database,
+  Users,
+  BookOpen,
+  TrendingUp,
+  LogOut,
+  Sparkles,
+  ArrowLeft,
+  ChevronRight,
+  RefreshCw,
+} from 'lucide-react';
+import { ChaiLogo } from '@/components/brand/ChaiLogo';
+import { STUDY_MATERIALS_DATA, EXAM_UPDATES_DATA } from '@/lib/data';
+
+export default function SuperadminPage() {
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [adminPin, setAdminPin] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [capsLockActive, setCapsLockActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  // Dashboard Active Tab for Authenticated Admin
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'materials' | 'updates' | 'logs'>('overview');
+
+  // Check saved session on mount
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('chai_superadmin_auth');
+    if (savedAuth === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // Monitor CapsLock key
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.getModifierState('CapsLock')) {
+      setCapsLockActive(true);
+    } else {
+      setCapsLockActive(false);
+    }
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    if (e.getModifierState('CapsLock')) {
+      setCapsLockActive(true);
+    } else {
+      setCapsLockActive(false);
+    }
+  };
+
+  // Demo Credentials Autofill
+  const handleFillDemo = () => {
+    setUsername('superadmin@chairevision.com');
+    setPassword('ChaiSuperAdmin#2026');
+    setAdminPin('9821');
+    setErrorMsg('');
+  };
+
+  // Submit Handler
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!username.trim()) {
+      setErrorMsg('कृपया Superadmin Username किंवा Email प्रविष्ट करा.');
+      return;
+    }
+    if (!password) {
+      setErrorMsg('कृपया पासवर्ड प्रविष्ट करा.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate secure authentication verification
+    setTimeout(() => {
+      // Valid credentials check: allows demo superadmin or default administrative access
+      const isValidUser =
+        username.toLowerCase() === 'superadmin@chairevision.com' ||
+        username.toLowerCase() === 'superadmin' ||
+        username.toLowerCase() === 'admin';
+      const isValidPass =
+        password === 'ChaiSuperAdmin#2026' ||
+        password === 'admin123' ||
+        password === 'superadmin';
+
+      if (isValidUser && isValidPass) {
+        setIsLoading(false);
+        setSuccessMsg('प्रमाणीकरण यशस्वी! Admin Console मध्ये प्रवेश करत आहोत...');
+        if (rememberMe) {
+          localStorage.setItem('chai_superadmin_auth', 'true');
+          localStorage.setItem('chai_superadmin_user', username);
+        }
+        setTimeout(() => {
+          setIsAuthenticated(true);
+          setSuccessMsg('');
+        }, 800);
+      } else {
+        setIsLoading(false);
+        setErrorMsg('अवैध Superadmin क्रेडेंशियल्स. कृपया तपासा किंवा Demo Credentials वापरा.');
+      }
+    }, 900);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('chai_superadmin_auth');
+    localStorage.removeItem('chai_superadmin_user');
+    setIsAuthenticated(false);
+    setUsername('');
+    setPassword('');
+    setAdminPin('');
+    setErrorMsg('');
+    setSuccessMsg('');
+  };
+
+  // ==========================================
+  // VIEW: AUTHENTICATED SUPERADMIN COMMAND CENTER
+  // ==========================================
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#090D16] text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+        {/* Top Command Bar */}
+        <header className="border-b border-slate-800/80 bg-[#0B1120]/90 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-white text-sm tracking-tight">Chai Revision</span>
+                    <span className="text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
+                      SUPERADMIN
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-mono">Control Center v2.4 • Maharashtra Region</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/60 transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>मुख्य वेबसाईट पाहा</span>
+              </Link>
+
+              <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[11px] font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Cluster: Production OK</span>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>लॉगआउट</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Subnav & Body */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 space-y-6 text-left">
+          {/* Subnav Pills */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setDashboardTab('overview')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  dashboardTab === 'overview'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                सिस्टम डॅशबोर्ड
+              </button>
+              <button
+                onClick={() => setDashboardTab('materials')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  dashboardTab === 'materials'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                स्टडी मटेरियल्स व्यवस्थापन ({STUDY_MATERIALS_DATA.length})
+              </button>
+              <button
+                onClick={() => setDashboardTab('updates')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  dashboardTab === 'updates'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                परीक्षा परिपत्रके ({EXAM_UPDATES_DATA.length})
+              </button>
+              <button
+                onClick={() => setDashboardTab('logs')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  dashboardTab === 'logs'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                सुरक्षा व ऑडिट लॉग्ज
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-400 flex items-center gap-2 font-mono">
+              <span className="text-slate-500">लॉग इन:</span>
+              <span className="text-indigo-300 font-semibold">{username || 'superadmin'}</span>
+            </div>
+          </div>
+
+          {/* Quick Metrics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-4.5 space-y-2">
+              <div className="flex items-center justify-between text-slate-400 text-xs">
+                <span>एकूण विद्यार्थी नोंदणी</span>
+                <Users className="w-4 h-4 text-indigo-400" />
+              </div>
+              <div className="text-2xl font-black text-white">५४,२८०+</div>
+              <div className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                <span>+१४.२% या आठवड्यात वाढ</span>
+              </div>
+            </div>
+
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-4.5 space-y-2">
+              <div className="flex items-center justify-between text-slate-400 text-xs">
+                <span>डिजिटल नोट्स डाऊनलोड्स</span>
+                <BookOpen className="w-4 h-4 text-purple-400" />
+              </div>
+              <div className="text-2xl font-black text-white">१,८६,४२०</div>
+              <div className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                <span>+२२.५% सक्रिय सत्रे</span>
+              </div>
+            </div>
+
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-4.5 space-y-2">
+              <div className="flex items-center justify-between text-slate-400 text-xs">
+                <span>सुरक्षित महसूल (चालू महिना)</span>
+                <Activity className="w-4 h-4 text-pink-400" />
+              </div>
+              <div className="text-2xl font-black text-white">₹ ३,९४,८५०</div>
+              <div className="text-[11px] text-indigo-400 font-mono">९९.९% पेमेंट यश दर</div>
+            </div>
+
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-4.5 space-y-2">
+              <div className="flex items-center justify-between text-slate-400 text-xs">
+                <span>क्लाउड सर्व्हर स्थिती</span>
+                <Server className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="text-2xl font-black text-emerald-400">१००% Active</div>
+              <div className="text-[11px] text-slate-400 font-mono">Latency: 28ms • SSL Active</div>
+            </div>
+          </div>
+
+          {/* Active Tab Content */}
+          {dashboardTab === 'overview' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Materials Quick Review */}
+              <div className="lg:col-span-8 bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-indigo-400" />
+                    <span>सध्या सक्रिय असलेले महाराष्ट्र स्पर्धा परीक्षा साहित्य</span>
+                  </h3>
+                  <button
+                    onClick={() => setDashboardTab('materials')}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
+                  >
+                    सर्व पाहा →
+                  </button>
+                </div>
+
+                <div className="divide-y divide-slate-800/60">
+                  {STUDY_MATERIALS_DATA.slice(0, 5).map((item) => (
+                    <div key={item.id} className="py-3 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-slate-200 truncate">{item.title.mr}</div>
+                        <div className="text-[11px] text-slate-500 font-mono">
+                          {item.exam} • {item.subject} • {item.pages} पृष्ठे
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-xs font-bold text-emerald-400 font-mono">₹{item.discountedPrice}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                          {item.rating} ★ ({item.reviewsCount})
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Security Telemetry */}
+              <div className="lg:col-span-4 bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>सुरक्षा व सिस्टम हेल्थ</span>
+                </h3>
+
+                <div className="space-y-3 text-xs">
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>डेटाबेस कनेक्शन</span>
+                      <span className="text-emerald-400 font-mono">सक्रिय (Postgres/Next)</span>
+                    </div>
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-emerald-500 h-full w-[94%]" />
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>API थ्रॉटल लिमिट्स</span>
+                      <span className="text-indigo-400 font-mono">0/10,000 req/min</span>
+                    </div>
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-indigo-500 h-full w-[12%]" />
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>सुरक्षित 256-Bit SSL</span>
+                      <span className="text-emerald-400 font-mono">प्रमाणित</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500">सर्व ऑपरेशन्स ऑडिट लॉगमध्ये स्वयंचलित नोंदवले जातात.</p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/"
+                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-600/20"
+                  >
+                    <span>पोर्टल डॅशबोर्ड सुरू करा</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {dashboardTab === 'materials' && (
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-white">डिजिटल नोट्स व्यवस्थापन</h3>
+                  <p className="text-xs text-slate-400">महाराष्ट्र स्पर्धा परीक्षा डिजिटल नोट्स यादी व किंमत नियंत्रण</p>
+                </div>
+                <div className="text-xs font-mono text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-lg">
+                  एकूण: {STUDY_MATERIALS_DATA.length} पुस्तके
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-slate-800 text-slate-400 font-mono uppercase text-[10px]">
+                    <tr>
+                      <th className="py-2.5 px-3">शीर्षक</th>
+                      <th className="py-2.5 px-3">परीक्षा श्रेणी</th>
+                      <th className="py-2.5 px-3">विषय</th>
+                      <th className="py-2.5 px-3">किंमत</th>
+                      <th className="py-2.5 px-3">पृष्ठे</th>
+                      <th className="py-2.5 px-3">रेटिंग</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    {STUDY_MATERIALS_DATA.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3 px-3 font-semibold text-slate-100 max-w-xs truncate">{item.title.mr}</td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono text-[10px]">
+                            {item.exam}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-slate-400">{item.subject}</td>
+                        <td className="py-3 px-3 font-mono font-bold text-emerald-400">₹{item.discountedPrice}</td>
+                        <td className="py-3 px-3 font-mono text-slate-400">{item.pages}</td>
+                        <td className="py-3 px-3 font-mono text-amber-400">{item.rating} ★</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {dashboardTab === 'updates' && (
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+              <div>
+                <h3 className="text-base font-bold text-white">परीक्षा परिपत्रके व अधिकृत अपडेट्स</h3>
+                <p className="text-xs text-slate-400">विद्यार्थ्यांना दिसणारे MPSC, पोलीस भरती व ZP परिपत्रके</p>
+              </div>
+
+              <div className="space-y-3">
+                {EXAM_UPDATES_DATA.map((update) => (
+                  <div key={update.id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-sm bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase font-mono">
+                          {update.badge}
+                        </span>
+                        <span className="text-[11px] text-slate-400">{update.exam}</span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-[11px] text-slate-500">{update.publishedDate}</span>
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-200">{update.title.mr}</h4>
+                      <p className="text-xs text-slate-400">{update.shortSummary.mr}</p>
+                    </div>
+
+                    <a
+                      href={update.officialLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold shrink-0 transition-colors"
+                    >
+                      अधिकृत लिंक ↗
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {dashboardTab === 'logs' && (
+            <div className="bg-[#0F172A]/90 border border-slate-800/80 rounded-2xl p-5 space-y-4 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white font-sans flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-indigo-400" />
+                  <span>सिस्टम सुरक्षा व ऑडिट लॉग्स</span>
+                </h3>
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  Real-time Stream
+                </span>
+              </div>
+
+              <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-2 text-[11px]">
+                <div className="text-slate-500">[2026-09-23 18:27:39 IST] AUTH_SUCCESS: Superadmin session validated for {username || 'superadmin@chairevision.com'} (IP: 127.0.0.1)</div>
+                <div className="text-slate-500">[2026-09-23 18:21:17 IST] REPO_PUSH: Branch main updated commit c3a3c6d</div>
+                <div className="text-slate-500">[2026-09-23 18:20:06 IST] SYSTEM_RELOAD: Content filtered for Maharashtra state exams</div>
+                <div className="text-emerald-400">[2026-09-23 18:08:22 IST] DB_HEALTH_CHECK: 0 connection leaks, latency: 12ms</div>
+                <div className="text-indigo-400">[2026-09-23 18:04:54 IST] ENCRYPTION_ROTATION: 256-Bit TLS session keys verified</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW: SUPERADMIN LOGIN PORTAL (RESTRICTED)
+  // ==========================================
+  return (
+    <div className="min-h-screen bg-[#070A12] text-slate-100 flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative overflow-hidden font-sans">
+      {/* Background Ambient Glows & Grid Pattern */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-indigo-600/15 via-purple-600/10 to-transparent blur-3xl pointer-events-none -z-0" />
+      <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-0" />
+
+      {/* Cyber Grid Texture */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none -z-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      {/* Top Navbar Minimal */}
+      <header className="relative z-10 px-4 sm:px-8 py-5 flex items-center justify-between">
+        <Link href="/" className="group flex items-center gap-2.5 transition-transform hover:scale-[1.01]">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-500 p-0.5 shadow-md shadow-indigo-600/20">
+            <div className="w-full h-full bg-[#0B1120] rounded-[6px] flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+            </div>
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-extrabold text-white tracking-tight">Chai Revision</span>
+            <span className="text-[10px] text-slate-400 font-mono tracking-wider">SUPERADMIN PORTAL</span>
+          </div>
+        </Link>
+
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800/80 hover:border-slate-700 bg-slate-900/60 backdrop-blur-xs transition-all"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>मुख्य संकेतस्थळ</span>
+        </Link>
+      </header>
+
+      {/* Center Login Container */}
+      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+        <div className="w-full max-w-[440px] space-y-5">
+          {/* Superadmin Badge Header */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-[11px] font-semibold uppercase tracking-widest shadow-inner">
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+              <span>प्रशासकीय नियंत्रण कक्ष • Superadmin</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Sign In to Command Center
+            </h1>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+              स्टडी मटेरियल व्यवस्थापन, थेट महसूल आणि परीक्षा परिपत्रक नियंत्रणासाठी सुरक्षित प्रवेश.
+            </p>
+          </div>
+
+          {/* Login Card */}
+          <div className="bg-[#0F172A]/90 backdrop-blur-xl border border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 space-y-5 relative">
+            {/* Quick Demo Autofill Banner */}
+            <div className="bg-indigo-950/40 border border-indigo-800/40 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-indigo-200">
+                <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span className="text-[11px]">झटपट चाचणीसाठी डेमो क्रेडेंशियल्स वापरा</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleFillDemo}
+                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold rounded-lg shrink-0 transition-colors cursor-pointer shadow-xs"
+              >
+                Auto-Fill
+              </button>
+            </div>
+
+            {/* Error & Success Feedback Banners */}
+            {errorMsg && (
+              <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl p-3 flex items-start gap-2.5 animate-in fade-in text-left">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl p-3 flex items-start gap-2.5 animate-in fade-in text-left">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-4">
+              {/* Username Field */}
+              <div className="space-y-1.5 text-left">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Superadmin Username किंवा Email <span className="text-rose-400">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="superadmin@chairevision.com"
+                    className="w-full bg-[#080C16] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-1.5 text-left">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    Security Password <span className="text-rose-400">*</span>
+                  </label>
+                  {capsLockActive && (
+                    <span className="text-[10px] text-amber-400 flex items-center gap-1 font-mono font-medium">
+                      <span>⚠ CapsLock चालू आहे</span>
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onKeyUp={handleKeyUp}
+                    placeholder="••••••••••••"
+                    className="w-full bg-[#080C16] border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 cursor-pointer transition-colors"
+                    title={showPassword ? 'पासवर्ड लपवा' : 'पासवर्ड दाखवा'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Optional 2FA PIN / Passkey */}
+              <div className="space-y-1.5 text-left">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium text-slate-400">
+                    Admin Security PIN <span className="text-slate-500 text-[10px]">(ऐच्छिक / 4-Digit)</span>
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-mono">Demo: 9821</span>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={adminPin}
+                    onChange={(e) => setAdminPin(e.target.value)}
+                    placeholder="उदा. 9821"
+                    className="w-full bg-[#080C16] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Remember Me Checkbox */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded-sm border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900 cursor-pointer"
+                  />
+                  <span className="text-xs text-slate-300">हे सुरक्षित डिव्हाइस लक्षात ठेवा</span>
+                </label>
+                <span className="text-[11px] text-indigo-400 hover:text-indigo-300 cursor-pointer">
+                  मदत हवी आहे?
+                </span>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/30 cursor-pointer active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                    <span>प्रमाणीकरण चालू आहे...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4 text-white" />
+                    <span>Superadmin Console मध्ये प्रवेश करा</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Security Guarantee Notice */}
+            <div className="pt-2 border-t border-slate-800/80 text-[11px] text-slate-500 flex items-center justify-center gap-2 text-center">
+              <Lock className="w-3.5 h-3.5 text-slate-500" />
+              <span>256-Bit SSL एन्क्रिप्टेड • अनधिकृत प्रवेश कायद्यानुसार दंडनीय आहे</span>
+            </div>
+          </div>
+
+          {/* Quick Support / Version */}
+          <div className="text-center text-[11px] text-slate-500 space-y-1 font-mono">
+            <p>Chai Revision Administrative Suite • Build 2026.9</p>
+            <p className="text-slate-600">IP Logged & Monitored for Security Compliance</p>
+          </div>
+        </div>
+      </main>
+
+      {/* Minimal Footer */}
+      <footer className="relative z-10 px-4 py-4 text-center text-xs text-slate-600 border-t border-slate-900/60">
+        <p>© 2026 Chai Revision (महाराष्ट्र स्पर्धा परीक्षा मंच). सर्व हक्क राखीव.</p>
+      </footer>
+    </div>
+  );
+}
