@@ -66,7 +66,7 @@ export function HeroSection() {
 
             {/* Crisp 1-Line Subtitle */}
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal max-w-xl">
-              MPSC, UPSC, पोलीस भरती आणि सर्व स्पर्धा परीक्षांसाठी १००% दर्जेदार डिजिटल नोट्स, ई-बुक्स आणि PYQ विश्लेषण.
+              MPSC (राज्यसेवा, गट ब व क), पोलीस भरती, तलाठी आणि महाराष्ट्र शासनाच्या सर्व स्पर्धा परीक्षांसाठी १००% दर्जेदार डिजिटल नोट्स व PYQ विश्लेषण.
             </p>
 
             {/* Clean Integrated Search Bar */}

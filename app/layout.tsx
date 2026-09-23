@@ -2,20 +2,20 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Chai Revision — स्पर्धा परीक्षेचा Smart Study Companion | MPSC, UPSC, तलाठी, भरती',
+  title: 'Chai Revision — स्पर्धा परीक्षेचा Smart Study Companion | MPSC, पोलीस भरती, तलाठी, ZP भरती',
   description:
-    'स्पर्धा परीक्षेच्या तयारीसाठी तुमचा Smart Study Companion. MPSC, UPSC, PSI, STI, ASO, तलाठी, पोलीस भरतीसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates एकाच ठिकाणी.',
+    'स्पर्धा परीक्षेच्या तयारीसाठी तुमचा Smart Study Companion. MPSC, PSI, STI, ASO, तलाठी, पोलीस भरती, जिल्हा परिषद आणि महाराष्ट्र स्पर्धा परीक्षांसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates एकाच ठिकाणी.',
   openGraph: {
     title: 'Chai Revision — स्पर्धा परीक्षेचा Smart Study Companion',
     description:
-      'MPSC, UPSC, PSI, STI, ASO, तलाठी, पोलीस भरतीसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates.',
+      'MPSC, PSI, STI, ASO, तलाठी, पोलीस भरती, जिल्हा परिषद आणि महाराष्ट्र स्पर्धा परीक्षांसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Chai Revision — स्पर्धा परीक्षेचा Smart Study Companion',
     description:
-      'MPSC, UPSC, PSI, STI, ASO, तलाठी, पोलीस भरतीसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates.',
+      'MPSC, PSI, STI, ASO, तलाठी, पोलीस भरती, जिल्हा परिषद आणि महाराष्ट्र स्पर्धा परीक्षांसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates.',
   },
 };
 

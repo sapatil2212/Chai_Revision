@@ -18,7 +18,7 @@ export function WhyChaiRevisionSection() {
       icon: ShieldCheck,
       color: 'bg-blue-50 text-blue-700 border-blue-200',
       title: 'आयोगाच्या पॅटर्नशी १००% सुसंगत',
-      desc: 'MPSC, UPSC आणि TCS/IBPS च्या मागील १० वर्षांच्या प्रश्नपत्रिकांचा सखोल अभ्यास करून तयार केलेले अचूक मुद्दे.',
+      desc: 'MPSC (राज्यसेवा व संयुक्त) आणि TCS/IBPS सरळसेवा परीक्षांच्या मागील १० वर्षांच्या प्रश्नपत्रिकांचा सखोल अभ्यास करून तयार केलेले अचूक मुद्दे.',
     },
     {
       icon: Zap,

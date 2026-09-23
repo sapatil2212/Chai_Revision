@@ -2,7 +2,7 @@ export type Language = 'mr' | 'en' | 'hi';
 
 export type ExamCategory = 
   | 'MPSC'
-  | 'UPSC'
+  | 'Arogya Bharti'
   | 'PSI'
   | 'STI'
   | 'ASO'

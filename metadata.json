@@ -1,6 +1,6 @@
 {
   "name": "Chai Revision",
-  "description": "स्पर्धा परीक्षेच्या तयारीसाठी तुमचा Smart Study Companion. MPSC, UPSC, PSI, STI, ASO, तलाठी, पोलीस भरतीसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates एकाच ठिकाणी.",
+  "description": "स्पर्धा परीक्षेच्या तयारीसाठी तुमचा Smart Study Companion. MPSC, PSI, STI, ASO, तलाठी, पोलीस भरती, जिल्हा परिषद आणि महाराष्ट्र स्पर्धा परीक्षांसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates एकाच ठिकाणी.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

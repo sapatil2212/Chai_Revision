@@ -65,12 +65,12 @@ export function ExamCategoriesSection() {
           hoverBorder: 'hover:border-orange-300 hover:shadow-orange-500/10',
           glow: 'from-orange-500/5 to-amber-500/5',
         };
-      case 'UPSC':
+      case 'Arogya Bharti':
         return {
-          iconBg: 'bg-indigo-50 text-indigo-700 border-indigo-200 group-hover:bg-indigo-600 group-hover:text-white',
-          badge: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-          hoverBorder: 'hover:border-indigo-300 hover:shadow-indigo-500/10',
-          glow: 'from-indigo-500/5 to-blue-500/5',
+          iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-200 group-hover:bg-emerald-600 group-hover:text-white',
+          badge: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          hoverBorder: 'hover:border-emerald-300 hover:shadow-emerald-500/10',
+          glow: 'from-emerald-500/5 to-teal-500/5',
         };
       default:
         return {

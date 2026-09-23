@@ -134,7 +134,7 @@ export function ExamUpdatesView() {
             {t.nav.examUpdates}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            MPSC, UPSC, पोलीस भरती आणि तलाठी परीक्षांचे अधिकृत परिपत्रके व अंतिम मुदत.
+            MPSC (राज्यसेवा व संयुक्त), पोलीस भरती, तलाठी व जिल्हा परिषद भरती परीक्षांची अधिकृत परिपत्रके व अंतिम मुदत.
           </p>
         </div>
 

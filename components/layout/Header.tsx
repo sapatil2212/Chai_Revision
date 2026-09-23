@@ -23,7 +23,7 @@ interface LanguageOption {
 
 const LANGUAGES: LanguageOption[] = [
   { code: 'mr', native: 'मराठी', label: 'Marathi', subtitle: 'महाराष्ट्र परीक्षांसाठी प्राधान्य', badge: 'Default' },
-  { code: 'en', native: 'English', label: 'English', subtitle: 'Bilingual & UPSC Material' },
+  { code: 'en', native: 'English', label: 'English', subtitle: 'Bilingual & MPSC Material' },
   { code: 'hi', native: 'हिन्दी', label: 'Hindi', subtitle: 'राष्ट्रीय व राज्यस्तरीय परीक्षा' },
 ];
 

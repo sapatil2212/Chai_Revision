@@ -87,15 +87,15 @@ export const EXAM_CATEGORIES_DATA: {
     iconName: 'Award',
   },
   {
-    id: 'UPSC',
-    name: { mr: 'UPSC (CSE / CDS)', en: 'UPSC (Civil Services)', hi: 'UPSC (सिविल सेवा)' },
+    id: 'Arogya Bharti',
+    name: { mr: 'आरोग्य भरती व जिल्हा परिषद', en: 'Arogya Bharti & ZP', hi: 'आरोग्य भर्ती एवं ZP' },
     desc: {
-      mr: 'NCERT सारांश, जीएस रिव्हिजन मॉड्यूल्स आणि द्विभाषिक प्रश्नसंच',
-      en: 'NCERT summaries, GS revision modules and bilingual question banks',
-      hi: 'NCERT सारांश, GS रिवीजन मॉड्यूल्स एवं द्विभाषी प्रश्न बैंक',
+      mr: 'आरोग्य सेवक, परिचारिका, औषध निर्माण अधिकारी व ZP तांत्रिक नोट्स',
+      en: 'Arogya Sevak, ANM/GNM, Pharmacist and ZP technical study notes',
+      hi: 'आरोग्य सेवक, फार्मासिस्ट एवं जिला परिषद तकनीकी नोट्स',
     },
-    resourcesCount: 104,
-    iconName: 'BookOpen',
+    resourcesCount: 88,
+    iconName: 'Award',
   },
   {
     id: 'TET / TAIT',
