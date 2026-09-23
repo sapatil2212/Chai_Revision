@@ -20,7 +20,6 @@ import {
   BookOpen,
   TrendingUp,
   LogOut,
-  Sparkles,
   ArrowLeft,
   ChevronRight,
   RefreshCw,
@@ -96,13 +95,6 @@ export default function SuperadminPage() {
     }
   };
 
-  // Demo Credentials Autofill
-  const handleFillDemo = () => {
-    setUsername('superadmin@chairevision.com');
-    setPassword('ChaiSuperAdmin#2026');
-    setAdminPin('9821');
-    setErrorMsg('');
-  };
 
   // Submit Handler
   const handleLogin = (e: React.FormEvent) => {
@@ -145,7 +137,7 @@ export default function SuperadminPage() {
         }, 800);
       } else {
         setIsLoading(false);
-        setErrorMsg('अवैध Superadmin क्रेडेंशियल्स. कृपया तपासा किंवा Auto-Fill Demo वापरा.');
+        setErrorMsg('अवैध Superadmin क्रेडेंशियल्स. कृपया योग्य तपशील प्रविष्ट करा.');
       }
     }, 850);
   };
@@ -559,37 +551,15 @@ export default function SuperadminPage() {
               <ChaiLogo variant="dark" size="md" showTagline={false} />
             </div>
 
-            <div className="space-y-1 pt-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-800 text-[11px] font-bold uppercase tracking-widest shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                <span>प्रशासकीय नियंत्रण कक्ष • Superadmin</span>
-              </div>
+            <div className="pt-1">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E2653] tracking-tight">
                 Sign In to Command Center
               </h1>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                स्टडी मटेरियल व्यवस्थापन, थेट महसूल आणि परीक्षा परिपत्रक नियंत्रणासाठी सुरक्षित प्रशासन प्रवेश.
-              </p>
             </div>
           </div>
 
           {/* Login Card */}
           <div className="bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/60 space-y-5 relative">
-            {/* Quick Demo Autofill Banner */}
-            <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-blue-900 font-medium">
-                <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-                <span className="text-[11px]">झटपट चाचणीसाठी डेमो क्रेडेंशियल्स वापरा</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleFillDemo}
-                className="px-2.5 py-1 bg-[#1C2C5B] hover:bg-blue-900 text-white text-[11px] font-semibold rounded-lg shrink-0 transition-colors cursor-pointer shadow-2xs"
-              >
-                Auto-Fill
-              </button>
-            </div>
-
             {/* Error & Success Feedback Banners */}
             {errorMsg && (
               <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl p-3 flex items-start gap-2.5 animate-in fade-in text-left">
@@ -666,12 +636,9 @@ export default function SuperadminPage() {
 
               {/* Optional 2FA PIN / Passkey */}
               <div className="space-y-1.5 text-left">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-medium text-slate-600">
-                    Admin Security PIN <span className="text-slate-400 text-[10px]">(ऐच्छिक / 4-Digit)</span>
-                  </label>
-                  <span className="text-[10px] text-slate-400 font-mono">Demo: 9821</span>
-                </div>
+                <label className="block text-xs font-medium text-slate-600">
+                  Admin Security PIN <span className="text-slate-400 text-[10px]">(ऐच्छिक / 4-Digit)</span>
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <KeyRound className="w-4 h-4" />
@@ -698,9 +665,6 @@ export default function SuperadminPage() {
                   />
                   <span className="text-xs text-slate-600">हे सुरक्षित डिव्हाइस लक्षात ठेवा</span>
                 </label>
-                <span className="text-[11px] text-blue-700 hover:text-blue-900 font-medium cursor-pointer">
-                  मदत हवी आहे?
-                </span>
               </div>
 
               {/* Submit Button */}
@@ -723,18 +687,6 @@ export default function SuperadminPage() {
                 )}
               </button>
             </form>
-
-            {/* Security Guarantee Notice */}
-            <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-center gap-2 text-center">
-              <Lock className="w-3.5 h-3.5 text-slate-400" />
-              <span>256-Bit SSL एन्क्रिप्टेड • अनधिकृत प्रवेश कायद्यानुसार दंडनीय आहे</span>
-            </div>
-          </div>
-
-          {/* Quick Support / Version */}
-          <div className="text-center text-[11px] text-slate-500 space-y-1 font-mono">
-            <p>Chai Revision Administrative Suite • Build 2026.9</p>
-            <p className="text-slate-400">IP Logged & Monitored for Security Compliance</p>
           </div>
         </div>
       </main>
