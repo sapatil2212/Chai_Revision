@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: 'Chai Revision — स्पर्धा परीक्षेचा Smart Study Companion | MPSC, पोलीस भरती, तलाठी, ZP भरती',
   description:
     'स्पर्धा परीक्षेच्या तयारीसाठी तुमचा Smart Study Companion. MPSC, PSI, STI, ASO, तलाठी, पोलीस भरती, जिल्हा परिषद आणि महाराष्ट्र स्पर्धा परीक्षांसाठी दर्जेदार Notes, PDFs, PYQs, Current Affairs आणि Exam Updates एकाच ठिकाणी.',
+  icons: {
+    icon: [{ url: '/images/favicon.png', type: 'image/png' }],
+    shortcut: '/images/favicon.png',
+    apple: '/images/favicon.png',
+  },
   openGraph: {
     title: 'Chai Revision — स्पर्धा परीक्षेचा Smart Study Companion',
     description:

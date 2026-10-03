@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/lib/store';
-import { STUDY_MATERIALS_DATA, COURSES_DATA, PYQS_DATA, EXAM_UPDATES_DATA, BLOG_POSTS_DATA } from '@/lib/data';
-import { Search, X, BookOpen, GraduationCap, HelpCircle, Bell, Newspaper, ArrowRight } from 'lucide-react';
+import { STUDY_MATERIALS_DATA, PYQS_DATA, EXAM_UPDATES_DATA, BLOG_POSTS_DATA } from '@/lib/data';
+import { Search, X, BookOpen, HelpCircle, Bell, ArrowRight } from 'lucide-react';
 
 export function SearchModal() {
   const { isSearchOpen, setIsSearchOpen, lang, navigateTo } = useApp();
   const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'materials' | 'courses' | 'pyq' | 'updates' | 'blogs'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'materials' | 'pyq' | 'updates' | 'blogs'>('all');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,10 +26,6 @@ export function SearchModal() {
 
   const filteredMaterials = STUDY_MATERIALS_DATA.filter((m) =>
     !q || m.title[lang]?.toLowerCase().includes(q) || m.exam.toLowerCase().includes(q) || m.subject.toLowerCase().includes(q)
-  );
-
-  const filteredCourses = COURSES_DATA.filter((c) =>
-    !q || c.title[lang]?.toLowerCase().includes(q) || c.exam.toLowerCase().includes(q)
   );
 
   const filteredPYQs = PYQS_DATA.filter((p) =>
@@ -106,19 +102,13 @@ export function SearchModal() {
             onClick={() => setActiveTab('all')}
             className={`px-3 py-1.5 rounded-lg transition-colors ${activeTab === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'}`}
           >
-            सर्व ({filteredMaterials.length + filteredCourses.length + filteredPYQs.length + filteredUpdates.length + filteredBlogs.length})
+            सर्व ({filteredMaterials.length + filteredPYQs.length + filteredUpdates.length + filteredBlogs.length})
           </button>
           <button
             onClick={() => setActiveTab('materials')}
             className={`px-3 py-1.5 rounded-lg transition-colors ${activeTab === 'materials' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'}`}
           >
             Materials ({filteredMaterials.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('courses')}
-            className={`px-3 py-1.5 rounded-lg transition-colors ${activeTab === 'courses' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            Courses ({filteredCourses.length})
           </button>
           <button
             onClick={() => setActiveTab('pyq')}

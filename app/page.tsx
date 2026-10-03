@@ -15,8 +15,6 @@ import { HeroSection } from '@/components/home/HeroSection';
 import { ExamCategoriesSection } from '@/components/home/ExamCategoriesSection';
 import { FeaturedMaterialsSection } from '@/components/home/FeaturedMaterialsSection';
 import { LatestUpdatesSection } from '@/components/home/LatestUpdatesSection';
-import { CurrentAffairsSection } from '@/components/home/CurrentAffairsSection';
-import { FeaturedCoursesSection } from '@/components/home/FeaturedCoursesSection';
 import { FreeResourcesSection } from '@/components/home/FreeResourcesSection';
 import { ImportantDatesSection } from '@/components/home/ImportantDatesSection';
 import { WhyChaiRevisionSection } from '@/components/home/WhyChaiRevisionSection';
@@ -24,12 +22,10 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 // Dedicated Views
 import { MaterialsView } from '@/components/views/MaterialsView';
-import { CoursesView } from '@/components/views/CoursesView';
 import { PYQView } from '@/components/views/PYQView';
 import { MCQQuizView } from '@/components/views/MCQQuizView';
-import { ExamUpdatesView } from '@/components/views/ExamUpdatesView';
+import { ComingSoonView } from '@/components/views/ComingSoonView';
 import { ImportantDatesView } from '@/components/views/ImportantDatesView';
-import { CurrentAffairsView } from '@/components/views/CurrentAffairsView';
 import { BlogsView } from '@/components/views/BlogsView';
 import { FreeResourcesView } from '@/components/views/FreeResourcesView';
 import { CheckoutView } from '@/components/views/CheckoutView';
@@ -40,7 +36,7 @@ import { AdminPortalView } from '@/components/views/AdminPortalView';
 import { Sparkles, MessageSquare } from 'lucide-react';
 
 function MainContent() {
-  const { activeView, setIsAIAssistantOpen } = useApp();
+  const { activeView, setIsAIAssistantOpen, t } = useApp();
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F8FAFC] overflow-x-clip">
@@ -62,12 +58,6 @@ function MainContent() {
               <LatestUpdatesSection />
             </ScrollReveal>
             <ScrollReveal delay={75}>
-              <CurrentAffairsSection />
-            </ScrollReveal>
-            <ScrollReveal delay={75}>
-              <FeaturedCoursesSection />
-            </ScrollReveal>
-            <ScrollReveal delay={75}>
               <FreeResourcesSection />
             </ScrollReveal>
             <ScrollReveal delay={75}>
@@ -80,12 +70,11 @@ function MainContent() {
         )}
 
         {activeView === 'materials' && <MaterialsView />}
-        {activeView === 'courses' && <CoursesView />}
         {activeView === 'pyq' && <PYQView />}
         {activeView === 'quiz' && <MCQQuizView />}
-        {activeView === 'exam-updates' && <ExamUpdatesView />}
+        {/* Exam Updates temporarily disabled; restore <ExamUpdatesView /> when ready */}
+        {activeView === 'exam-updates' && <ComingSoonView title={t.nav.examUpdates} />}
         {activeView === 'important-dates' && <ImportantDatesView />}
-        {activeView === 'current-affairs' && <CurrentAffairsView />}
         {activeView === 'blogs' && <BlogsView />}
         {activeView === 'free-resources' && <FreeResourcesView />}
         {activeView === 'checkout' && <CheckoutView />}

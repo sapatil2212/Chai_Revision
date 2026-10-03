@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/lib/store';
-import { Coffee, ShieldCheck, Zap, BookMarked, Smartphone, Users, Star, Quote } from 'lucide-react';
+import { Coffee, ShieldCheck, Zap, BookMarked, Smartphone, Users } from 'lucide-react';
 
 export function WhyChaiRevisionSection() {
   const { lang, t } = useApp();
@@ -74,32 +74,6 @@ export function WhyChaiRevisionSection() {
           })}
         </div>
 
-        {/* Student Testimonial Quote */}
-        <div className="mt-12 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-amber-50/60 border border-blue-200/80 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6 text-left shadow-xs relative overflow-hidden">
-          <Quote className="absolute top-4 right-6 w-20 h-20 text-blue-200/40 pointer-events-none" />
-
-          <img
-            src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
-            alt="Topper Aspirant"
-            className="w-16 h-16 rounded-full object-cover ring-4 ring-blue-500/20 shrink-0 shadow-sm"
-          />
-          <div className="space-y-2 relative z-10">
-            <div className="flex items-center gap-1 text-amber-500">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3.5 h-3.5 fill-current" />
-              ))}
-            </div>
-            <p className="text-xs sm:text-sm text-slate-800 italic leading-relaxed font-medium">
-              &ldquo;MPSC प्रिलिम्सच्या शेवटच्या १५ दिवसांत काय वाचावे असा मोठा प्रश्न होता. चाय रिव्हिजनच्या पॉलिटी व भूगोल नोट्समुळे अगदी कमी वेळात महत्त्वाचे सर्व आर्टिकल्स आणि मॅप्स रिव्हाईज झाले. परीक्षेतील डायरेक्ट १०+ प्रश्न यातून आले होते!&rdquo;
-            </p>
-            <div className="pt-1 flex items-center gap-2">
-              <span className="font-bold text-xs text-blue-900">प्रियांका गायकवाड</span>
-              <span className="text-[11px] text-slate-500 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full font-medium">
-                MPSC राज्यसेवा २०२५ (Rank holder) • पुणे
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

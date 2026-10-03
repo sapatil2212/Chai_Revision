@@ -1,27 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '@/lib/store';
 import {
   BookOpen,
   ArrowRight,
-  Sparkles,
-  Search,
-  Clock,
   ChevronDown,
 } from 'lucide-react';
 
 export function HeroSection() {
-  const { lang, t, navigateTo, setIsSearchOpen, setSearchQuery } = useApp();
-  const [heroSearch, setHeroSearch] = useState('');
-
-  const handleHeroSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (heroSearch.trim()) {
-      setSearchQuery(heroSearch);
-      setIsSearchOpen(true);
-    }
-  };
+  const { lang, navigateTo } = useApp();
 
   return (
     <section
@@ -70,70 +58,16 @@ export function HeroSection() {
               MPSC (राज्यसेवा, गट ब व क), पोलीस भरती, तलाठी आणि महाराष्ट्र शासनाच्या सर्व स्पर्धा परीक्षांसाठी १००% दर्जेदार डिजिटल नोट्स व PYQ विश्लेषण.
             </p>
 
-            {/* Clean Integrated Search Bar */}
-            <form onSubmit={handleHeroSearch} className="max-w-lg">
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-1.5 pl-4 flex items-center gap-2 border border-slate-200/90 shadow-xs focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                <Search className="w-4 h-4 text-slate-400 shrink-0" />
-                <input
-                  type="text"
-                  value={heroSearch}
-                  onChange={(e) => setHeroSearch(e.target.value)}
-                  placeholder={lang === 'mr' ? 'उदा. MPSC राज्यघटना, भूगोल, TCS नोट्स शोधा...' : 'Search subjects, exams, PYQs...'}
-                  className="w-full text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-hidden py-1.5"
-                />
-                <button
-                  type="submit"
-                  className="bg-[#1C2C5B] hover:bg-blue-900 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shrink-0 cursor-pointer shadow-2xs"
-                >
-                  {lang === 'en' ? 'Search' : 'शोध घ्या'}
-                </button>
-              </div>
-            </form>
-
-            {/* Primary Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            {/* Primary Action Button */}
+            <div className="flex items-center pt-1">
               <button
                 onClick={() => navigateTo('materials')}
                 className="px-5 py-2.5 bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition-all shadow-xs cursor-pointer active:scale-98"
               >
                 <BookOpen className="w-4 h-4" />
-                <span>{t.exploreCTA}</span>
+                <span>Explore Materials</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
-
-              <button
-                onClick={() => navigateTo('quiz')}
-                className="px-4 py-2.5 bg-white/90 hover:bg-white text-slate-800 hover:text-blue-900 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition-all border border-blue-200/90 shadow-2xs cursor-pointer"
-              >
-                <Clock className="w-4 h-4 text-amber-600" />
-                <span>MCQ सराव / Timed Quiz</span>
-              </button>
-
-              <button
-                onClick={() => navigateTo('free-resources')}
-                className="px-4 py-2.5 bg-white/80 hover:bg-white text-slate-700 hover:text-blue-800 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition-all border border-slate-200/90 shadow-2xs cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-emerald-600" />
-                <span>मोफत सराव व PYQ</span>
-              </button>
-            </div>
-
-            {/* Concise Stats Row */}
-            <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-600">
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-[#1E2653]">५०,०००+</span>
-                <span>डाऊनलोड्स</span>
-              </div>
-              <span className="text-slate-300">•</span>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-[#1E2653]">१००%</span>
-                <span>परीक्षानिहाय नोट्स</span>
-              </div>
-              <span className="text-slate-300">•</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-amber-500 font-bold">४.९ ★</span>
-                <span>विद्यार्थी रेटिंग</span>
-              </div>
             </div>
 
           </div>

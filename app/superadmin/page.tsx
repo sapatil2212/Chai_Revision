@@ -336,33 +336,6 @@ const MONTHLY_REVENUE_DATA = [
   { month: 'Sep', revenue: 394850, orders: 3260 },
 ];
 
-// Ashoka Stambha Seal Emblem (as used on the main navbar)
-function NavbarSealEmblem({ size = 'sm' }: { size?: 'sm' | 'md' }) {
-  const dims = size === 'md' ? 'w-7 h-8' : 'w-6 h-7';
-  return (
-    <div className={`${dims} text-[#1C2C5B] shrink-0 opacity-90`}>
-      <svg viewBox="0 0 100 125" fill="currentColor" className="w-full h-full drop-shadow-2xs">
-        <circle cx="50" cy="50" r="46" fill="#1C2C5B" fillOpacity="0.08" stroke="#1C2C5B" strokeWidth="3" />
-        <circle cx="50" cy="50" r="14" fill="none" stroke="#1C2C5B" strokeWidth="2.5" />
-        <circle cx="50" cy="50" r="3" fill="#1C2C5B" />
-        {Array.from({ length: 8 }).map((_, idx) => (
-          <line
-            key={idx}
-            x1="50"
-            y1="50"
-            x2={50 + 13 * Math.cos((idx * Math.PI) / 4)}
-            y2={50 + 13 * Math.sin((idx * Math.PI) / 4)}
-            stroke="#1C2C5B"
-            strokeWidth="2"
-          />
-        ))}
-        <path d="M36 28 L50 16 L64 28 L58 35 L42 35 Z" fill="#1C2C5B" />
-        <rect x="25" y="74" width="50" height="6" rx="2" fill="#1C2C5B" />
-      </svg>
-    </div>
-  );
-}
-
 // =========================================================================
 // MAIN SUPERADMIN COMPONENT
 // =========================================================================
@@ -722,12 +695,13 @@ export default function SuperadminPage() {
           <div>
             <div className="h-16 border-b border-slate-200/80 px-4 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2.5 overflow-hidden group">
-                <NavbarSealEmblem size="sm" />
-                {!sidebarCollapsed && (
-                  <div className="flex items-center gap-2">
-                    <div className="h-5 w-px bg-slate-200" />
-                    <ChaiLogo variant="dark" size="sm" showTagline={false} />
+                {sidebarCollapsed ? (
+                  // Collapsed sidebar: show only the round emblem portion of the logo image
+                  <div className="w-9 h-9 overflow-hidden shrink-0">
+                    <img src="/images/cr-logo.png" alt="Chai Revision" className="h-9 w-auto max-w-none" />
                   </div>
+                ) : (
+                  <ChaiLogo size="sm" />
                 )}
               </Link>
 
@@ -935,10 +909,7 @@ export default function SuperadminPage() {
             >
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-                  <div className="flex items-center gap-2.5">
-                    <NavbarSealEmblem size="sm" />
-                    <ChaiLogo variant="dark" size="sm" showTagline={false} />
-                  </div>
+                  <ChaiLogo size="sm" />
                   <button
                     onClick={() => setMobileMenuOpen(false)}
                     className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
@@ -2225,14 +2196,7 @@ export default function SuperadminPage() {
       {/* Top Navbar Minimal with Exact Navbar Logo */}
       <header className="relative z-10 px-4 sm:px-8 py-3.5 flex items-center justify-between border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-2xs">
         <Link href="/" className="group flex items-center gap-2.5 sm:gap-3.5 transition-transform hover:scale-[1.01]">
-          {/* Government seal emblem badge (same as navbar) */}
-          <div className="hidden sm:flex items-center gap-2.5">
-            <NavbarSealEmblem size="sm" />
-            <div className="h-6 w-px bg-slate-200/90" />
-          </div>
-
-          {/* ChaiLogo (same as navbar) */}
-          <ChaiLogo variant="dark" size="sm" showTagline={false} />
+          <ChaiLogo size="sm" />
 
           <span className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-sm uppercase tracking-wider ml-1">
             SUPERADMIN
@@ -2253,10 +2217,8 @@ export default function SuperadminPage() {
         <div className="w-full max-w-[440px] space-y-5">
           {/* Superadmin Card Header with Central Navbar Brand Logo */}
           <div className="text-center space-y-3">
-            <div className="flex justify-center items-center gap-3">
-              <NavbarSealEmblem size="md" />
-              <div className="h-8 w-px bg-slate-200" />
-              <ChaiLogo variant="dark" size="md" showTagline={false} />
+            <div className="flex justify-center items-center">
+              <ChaiLogo size="md" />
             </div>
 
             <div className="pt-1">
