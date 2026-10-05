@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
-import { STUDY_MATERIALS_DATA } from '@/lib/data';
 import { ProductCard } from '@/components/marketplace/ProductCard';
+import { canDownloadFree, materialDownloadUrl } from '@/lib/materialLinks';
 import {
   Star,
   FileText,
@@ -26,21 +26,36 @@ export function ProductDetailView() {
     navigateTo,
     lang,
     t,
-    addToCart,
-    cart,
     setPreviewProduct,
     toggleBookmark,
     isBookmarked,
+    materials,
   } = useApp();
-
-  const slug = viewParams.slug || 'mpsc-polity-revision-notes';
-  const product = STUDY_MATERIALS_DATA.find((p) => p.slug === slug) || STUDY_MATERIALS_DATA[0];
-
-  const inCart = cart.some((p) => p.id === product.id);
-  const bookmarked = isBookmarked(product.id);
   const [copied, setCopied] = useState(false);
 
-  const relatedProducts = STUDY_MATERIALS_DATA.filter(
+  const slug = viewParams.slug;
+  const product = materials.find((p) => p.slug === slug);
+
+  // Material may have been removed or unpublished by an admin
+  if (!product) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
+        <h1 className="text-xl font-bold text-slate-900">
+          {lang === 'en' ? 'This material is no longer available' : 'हे साहित्य सध्या उपलब्ध नाही'}
+        </h1>
+        <button
+          onClick={() => navigateTo('materials')}
+          className="px-5 py-2.5 bg-[#1C2C5B] hover:bg-blue-900 text-white text-sm font-semibold rounded-xl cursor-pointer"
+        >
+          {lang === 'en' ? 'Browse all materials' : 'सर्व साहित्य पाहा'}
+        </button>
+      </div>
+    );
+  }
+
+  const bookmarked = isBookmarked(product.id);
+
+  const relatedProducts = materials.filter(
     (p) => p.id !== product.id && (p.exam === product.exam || p.subject === product.subject)
   ).slice(0, 3);
 
@@ -183,22 +198,36 @@ export function ProductDetailView() {
                     )}
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    एका वेळी पेमेंट • कायमस्वरूपी व्हॅलिडिटी (Lifetime Access)
+                    {product.isFree
+                      ? 'नोंदणीशिवाय थेट डाऊनलोड'
+                      : 'एका वेळी पेमेंट • कायमस्वरूपी व्हॅलिडिटी (Lifetime Access)'}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => addToCart(product)}
-                    className={`px-6 py-3 font-bold rounded-2xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer ${
-                      inCart
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/20'
-                    }`}
-                  >
-                    <ShoppingCart className="w-4 h-4 text-white" />
-                    <span>{inCart ? 'कार्ट मध्ये जोडले आहे' : product.isFree ? 'विनामूल्य मिळवा' : 'आता खरेदी करा (Buy Now)'}</span>
-                  </button>
+                  {product.isFree ? (
+                    canDownloadFree(product) ? (
+                      <a
+                        href={materialDownloadUrl(product.slug)}
+                        className="px-6 py-3 font-bold rounded-2xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md active:scale-98 bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"
+                      >
+                        <Download className="w-4 h-4 text-white" aria-hidden="true" />
+                        <span>मोफत PDF डाऊनलोड करा</span>
+                      </a>
+                    ) : (
+                      <span className="px-5 py-3 rounded-2xl text-xs font-semibold bg-slate-100 text-slate-500">
+                        PDF लवकरच उपलब्ध होईल
+                      </span>
+                    )
+                  ) : (
+                    <button
+                      onClick={() => navigateTo('checkout', { slug: product.slug })}
+                      className="px-6 py-3 font-bold rounded-2xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/20"
+                    >
+                      <ShoppingCart className="w-4 h-4 text-white" />
+                      <span>{lang === 'en' ? 'Buy now' : 'आता खरेदी करा (Buy Now)'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -213,14 +242,28 @@ export function ProductDetailView() {
                   <span className="font-extrabold text-slate-900 mt-0.5 block">{product.language}</span>
                 </div>
                 <div className="p-3 bg-slate-50/70 border border-slate-200 rounded-xl">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold block">फॉरमॅट</span>
-                  <span className="font-extrabold text-slate-900 mt-0.5 block">Searchable PDF</span>
+                  <span className="text-slate-500 text-[10px] uppercase font-bold block">प्रकार</span>
+                  <span className="font-extrabold text-slate-900 mt-0.5 block">{product.materialType}</span>
                 </div>
                 <div className="p-3 bg-slate-50/70 border border-slate-200 rounded-xl">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold block">अॅक्सेस</span>
-                  <span className="font-extrabold text-slate-900 mt-0.5 block">Instant Download</span>
+                  <span className="text-slate-500 text-[10px] uppercase font-bold block">फाइल</span>
+                  <span className="font-extrabold text-slate-900 mt-0.5 block">
+                    {product.hasFile ? `PDF${product.fileSize ? ` • ${product.fileSize}` : ''}` : 'लवकरच'}
+                  </span>
                 </div>
               </div>
+
+              {/* What's included (admin-managed) */}
+              {product.whatIsIncluded.length > 0 && (
+                <ul className="grid sm:grid-cols-2 gap-2 text-xs">
+                  {product.whatIsIncluded.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-slate-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-px" aria-hidden="true" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {/* Description */}
               <div className="space-y-2 pt-2">
@@ -239,6 +282,9 @@ export function ProductDetailView() {
                   <span>अनुक्रमणिका (Table of Contents)</span>
                 </h3>
                 <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 divide-y divide-slate-200 text-xs">
+                  {product.tableOfContents.length === 0 && (
+                    <p className="text-slate-500">अनुक्रमणिका लवकरच जोडली जाईल.</p>
+                  )}
                   {product.tableOfContents.map((chapter, idx) => (
                     <div key={idx} className="py-2 first:pt-0 last:pb-0 flex items-center justify-between">
                       <span className="font-semibold text-slate-800">{chapter}</span>

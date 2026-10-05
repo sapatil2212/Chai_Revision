@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useApp } from '@/lib/store';
-import { STUDY_MATERIALS_DATA, EXAM_CATEGORIES_DATA } from '@/lib/data';
+import { EXAM_CATEGORIES_DATA } from '@/lib/data';
+import { MATERIAL_TYPE_OPTIONS, SUBJECT_LABELS_MR, SUBJECT_OPTIONS } from '@/lib/adminOptions';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import { ProductDetailView } from './ProductDetailView';
 import {
@@ -27,7 +28,7 @@ export function MaterialsView() {
 }
 
 function MaterialsCatalog() {
-  const { viewParams, lang, t } = useApp();
+  const { viewParams, lang, t, materials } = useApp();
 
   const [selectedExam, setSelectedExam] = useState<string>(viewParams.exam || 'All');
   const [selectedSubject, setSelectedSubject] = useState<string>('All');
@@ -37,11 +38,24 @@ function MaterialsCatalog() {
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const subjects = ['All', 'राज्यघटना', 'इतिहास', 'भूगोल', 'मराठी व्याकरण', 'चालू घडामोडी', 'सामान्य ज्ञान'];
-  const materialTypes = ['All', 'Short Revision Notes', 'PYQ Solutions', 'Formula Sheet', 'Question Bank', 'Mind Maps'];
+  // Filter options come from the live catalog, so every option always has results
+  const subjects = useMemo(
+    () => ['All', ...SUBJECT_OPTIONS.filter((s) => materials.some((m) => m.subject === s))],
+    [materials]
+  );
+  const materialTypes = useMemo(
+    () => ['All', ...MATERIAL_TYPE_OPTIONS.filter((t) => materials.some((m) => m.materialType === t))],
+    [materials]
+  );
+  const examCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const m of materials) counts[m.exam] = (counts[m.exam] || 0) + 1;
+    return counts;
+  }, [materials]);
+  const subjectLabel = (s: string) => (s === 'All' ? (lang === 'en' ? 'All' : 'सर्व') : lang === 'en' ? s : SUBJECT_LABELS_MR[s] || s);
 
   const filteredMaterials = useMemo(() => {
-    return STUDY_MATERIALS_DATA.filter((item) => {
+    return materials.filter((item) => {
       // Exam filter
       if (selectedExam !== 'All' && item.exam !== selectedExam) return false;
       // Subject filter
@@ -56,11 +70,12 @@ function MaterialsCatalog() {
 
       // Text search
       if (searchFilter.trim()) {
-        const q = searchFilter.toLowerCase();
-        const matchesTitle = item.title[lang]?.toLowerCase().includes(q);
-        const matchesExam = item.exam.toLowerCase().includes(q);
-        const matchesSubject = item.subject.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesExam && !matchesSubject) return false;
+        const q = searchFilter.trim().toLowerCase();
+        const haystack = [
+          item.title.en, item.title.mr, item.title.hi, item.exam, item.subject,
+          SUBJECT_LABELS_MR[item.subject], item.materialType, ...(item.tags || []),
+        ].join(' ').toLowerCase();
+        if (!q.split(/\s+/).every((word) => haystack.includes(word))) return false;
       }
 
       return true;
@@ -68,10 +83,14 @@ function MaterialsCatalog() {
       if (sortBy === 'price-asc') return a.discountedPrice - b.discountedPrice;
       if (sortBy === 'price-desc') return b.discountedPrice - a.discountedPrice;
       if (sortBy === 'rating') return b.rating - a.rating;
-      if (sortBy === 'bestseller') return (b.bestseller ? 1 : 0) - (a.bestseller ? 1 : 0);
+      if (sortBy === 'bestseller') {
+        // Bestsellers first, then featured; otherwise keep the admin's display order
+        const score = (p: typeof a) => (p.bestseller ? 2 : 0) + (p.featured ? 1 : 0);
+        return score(b) - score(a);
+      }
       return 0;
     });
-  }, [selectedExam, selectedSubject, selectedType, selectedPrice, searchFilter, sortBy, lang]);
+  }, [materials, selectedExam, selectedSubject, selectedType, selectedPrice, searchFilter, sortBy, lang]);
 
   const clearAllFilters = () => {
     setSelectedExam('All');
@@ -90,42 +109,42 @@ function MaterialsCatalog() {
     searchFilter !== '';
 
   return (
-    <div className="bg-gradient-to-b from-slate-50/70 via-white to-slate-50/70 min-h-screen py-8">
+    <div className="bg-gradient-to-b from-slate-50/70 via-white to-slate-50/70 min-h-screen py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 text-left">
         {/* Page Title & Breadcrumb Header */}
-        <div className="mb-6">
-          <span className="text-xs font-bold text-blue-600 tracking-wider uppercase bg-blue-50 border border-blue-200/80 px-2.5 py-0.5 rounded-full inline-block">
+        <div className="mb-5">
+          <span className="text-[11px] font-medium text-slate-600 tracking-wide uppercase bg-slate-100 border border-slate-200/80 px-2.5 py-0.5 rounded-full inline-block">
             डिजिटल लायब्ररी
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1.5">
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight mt-1">
             {t.materials.title}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 font-normal">
             {t.materials.subtitle}
           </p>
         </div>
 
         {/* Search & Mobile Filter Trigger Bar */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-3 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-2.5 sm:p-3 mb-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 text-blue-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="साहित्य शोधा (उदा. MPSC, Polity, Maths)..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-slate-400 focus:ring-1 focus:ring-slate-200 transition-all font-normal"
             />
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
             {/* Sort dropdown */}
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
-              <ArrowUpDown className="w-3.5 h-3.5 text-blue-600" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-hidden focus:border-slate-400"
               >
                 <option value="bestseller">{t.materials.sortBestseller}</option>
                 <option value="rating">{t.materials.sortRating}</option>
@@ -137,27 +156,27 @@ function MaterialsCatalog() {
             {/* Mobile Filter Toggle */}
             <button
               onClick={() => setMobileFilterOpen(true)}
-              className="lg:hidden flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-800 cursor-pointer"
+              className="lg:hidden flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 cursor-pointer"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-600" />
               <span>फिल्टर्स {hasActiveFilters && '•'}</span>
             </button>
           </div>
         </div>
 
         {/* Layout: Desktop Sidebar (3 Cols) + Product Grid (9 Cols) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Desktop Filter Sidebar */}
-          <aside className="hidden lg:block lg:col-span-3 bg-white border border-slate-200/90 rounded-3xl p-5 space-y-6 shadow-xs sticky top-24">
+          <aside className="hidden lg:block lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-4.5 space-y-5 shadow-2xs sticky top-20">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-                <Filter className="w-4 h-4 text-blue-600" />
+              <h3 className="font-medium text-sm text-slate-900 flex items-center gap-1.5">
+                <Filter className="w-4 h-4 text-slate-500" />
                 <span>{t.materials.filters}</span>
               </h3>
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer"
+                  className="text-[11px] font-medium text-rose-600 hover:underline cursor-pointer"
                 >
                   {t.materials.clearAll}
                 </button>
@@ -166,7 +185,7 @@ function MaterialsCatalog() {
 
             {/* Exam Filter */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+              <span className="text-xs font-medium text-slate-700 uppercase tracking-wider block">
                 {t.materials.filterExam}
               </span>
               <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
@@ -174,25 +193,25 @@ function MaterialsCatalog() {
                   onClick={() => setSelectedExam('All')}
                   className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                     selectedExam === 'All'
-                      ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/80 shadow-2xs'
-                      : 'hover:bg-slate-50 text-slate-600'
+                      ? 'bg-slate-900 text-white font-medium shadow-2xs'
+                      : 'hover:bg-slate-50 text-slate-600 font-normal'
                   }`}
                 >
                   <span>सर्व परीक्षा (All)</span>
-                  <span className="text-[10px] opacity-70">{STUDY_MATERIALS_DATA.length}</span>
+                  <span className="text-[10px] opacity-70">{materials.length}</span>
                 </button>
-                {EXAM_CATEGORIES_DATA.map((ex) => (
+                {EXAM_CATEGORIES_DATA.filter((ex) => examCounts[ex.id]).map((ex) => (
                   <button
                     key={ex.id}
                     onClick={() => setSelectedExam(ex.id)}
                     className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                       selectedExam === ex.id
-                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/80 shadow-2xs'
-                        : 'hover:bg-slate-50 text-slate-600'
+                        ? 'bg-slate-900 text-white font-medium shadow-2xs'
+                        : 'hover:bg-slate-50 text-slate-600 font-normal'
                     }`}
                   >
                     <span>{ex.name[lang]}</span>
-                    <span className="text-[10px] opacity-70">{ex.resourcesCount}</span>
+                    <span className="text-[10px] opacity-70">{examCounts[ex.id]}</span>
                   </button>
                 ))}
               </div>
@@ -200,7 +219,7 @@ function MaterialsCatalog() {
 
             {/* Subject Filter */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+              <span className="text-xs font-medium text-slate-700 uppercase tracking-wider block">
                 {t.materials.filterSubject}
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -210,11 +229,11 @@ function MaterialsCatalog() {
                     onClick={() => setSelectedSubject(sub)}
                     className={`px-2.5 py-1 rounded-lg text-xs transition-colors border cursor-pointer ${
                       selectedSubject === sub
-                        ? 'bg-blue-600 text-white border-blue-600 font-bold shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-blue-50/60 hover:text-blue-700 hover:border-blue-200'
+                        ? 'bg-slate-900 text-white border-slate-900 font-medium shadow-2xs'
+                        : 'bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50 font-normal'
                     }`}
                   >
-                    {sub}
+                    {subjectLabel(sub)}
                   </button>
                 ))}
               </div>
@@ -222,7 +241,7 @@ function MaterialsCatalog() {
 
             {/* Material Type Filter */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+              <span className="text-xs font-medium text-slate-700 uppercase tracking-wider block">
                 {t.materials.filterType}
               </span>
               <div className="space-y-1">
@@ -232,11 +251,11 @@ function MaterialsCatalog() {
                     onClick={() => setSelectedType(type)}
                     className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer ${
                       selectedType === type
-                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/80 shadow-2xs'
-                        : 'hover:bg-slate-50 text-slate-600'
+                        ? 'bg-slate-900 text-white font-medium shadow-2xs'
+                        : 'hover:bg-slate-50 text-slate-600 font-normal'
                     }`}
                   >
-                    {type}
+                    {type === 'All' ? (lang === 'en' ? 'All' : 'सर्व') : type}
                   </button>
                 ))}
               </div>
@@ -244,7 +263,7 @@ function MaterialsCatalog() {
 
             {/* Price Filter */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+              <span className="text-xs font-medium text-slate-700 uppercase tracking-wider block">
                 किंमत (Price)
               </span>
               <div className="space-y-1 text-xs">
@@ -260,8 +279,8 @@ function MaterialsCatalog() {
                     onClick={() => setSelectedPrice(pr.id)}
                     className={`w-full text-left px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
                       selectedPrice === pr.id
-                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/80 shadow-2xs'
-                        : 'hover:bg-slate-50 text-slate-600'
+                        ? 'bg-slate-900 text-white font-medium shadow-2xs'
+                        : 'hover:bg-slate-50 text-slate-600 font-normal'
                     }`}
                   >
                     {pr.label}
@@ -276,10 +295,10 @@ function MaterialsCatalog() {
             {/* Results Counter Bar */}
             <div className="flex items-center justify-between text-xs text-slate-500 px-1">
               <span>
-                <strong className="text-slate-900 font-bold">{filteredMaterials.length}</strong> अभ्यास साहित्य उपलब्ध
+                <strong className="text-slate-900 font-medium">{filteredMaterials.length}</strong> अभ्यास साहित्य उपलब्ध
               </span>
               {hasActiveFilters && (
-                <span className="text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-md">फिल्टर लागू आहेत</span>
+                <span className="text-slate-700 font-medium bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">फिल्टर लागू आहेत</span>
               )}
             </div>
 
@@ -291,17 +310,17 @@ function MaterialsCatalog() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-12 text-center space-y-3 shadow-xs">
-                <BookOpen className="w-12 h-12 text-blue-300 mx-auto" />
-                <h3 className="font-bold text-base text-slate-900">
+              <div className="bg-white rounded-3xl border border-slate-200/90 p-12 text-center space-y-3 shadow-2xs">
+                <BookOpen className="w-10 h-10 text-slate-400 mx-auto" />
+                <h3 className="font-medium text-base text-slate-900">
                   कोणतेही अभ्यास साहित्य सापडले नाही
                 </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                <p className="text-xs text-slate-500 max-w-sm mx-auto font-normal">
                   तुमच्या निवडलेल्या निकषांशी जुळणारे साहित्य उपलब्ध नाही. कृपया इतर फिल्टर्स निवडून पहा.
                 </p>
                 <button
                   onClick={clearAllFilters}
-                  className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-xl transition-all shadow-xs cursor-pointer"
                 >
                   सर्व फिल्टर्स रिसेट करा
                 </button>

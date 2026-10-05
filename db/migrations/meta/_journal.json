@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1791047071389,
+      "tag": "0000_init",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1791117128087,
+      "tag": "0001_materials_admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1791122040973,
+      "tag": "0002_quiz_lms",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1791127717758,
+      "tag": "0003_quiz_student_details",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1791138483558,
+      "tag": "0004_pyq_bank",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1791191194822,
+      "tag": "0005_workable_princess_powerful",
+      "breakpoints": true
+    }
+  ]
+}

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/lib/store';
-import { STUDY_MATERIALS_DATA, PYQS_DATA, EXAM_UPDATES_DATA, BLOG_POSTS_DATA } from '@/lib/data';
+import { PYQS_DATA, BLOG_POSTS_DATA } from '@/lib/data';
 import { Search, X, BookOpen, HelpCircle, Bell, ArrowRight } from 'lucide-react';
 
 export function SearchModal() {
-  const { isSearchOpen, setIsSearchOpen, lang, navigateTo } = useApp();
+  const { isSearchOpen, setIsSearchOpen, lang, navigateTo, materials, examUpdates } = useApp();
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'materials' | 'pyq' | 'updates' | 'blogs'>('all');
 
@@ -24,7 +24,7 @@ export function SearchModal() {
 
   const q = query.trim().toLowerCase();
 
-  const filteredMaterials = STUDY_MATERIALS_DATA.filter((m) =>
+  const filteredMaterials = materials.filter((m) =>
     !q || m.title[lang]?.toLowerCase().includes(q) || m.exam.toLowerCase().includes(q) || m.subject.toLowerCase().includes(q)
   );
 
@@ -32,7 +32,7 @@ export function SearchModal() {
     !q || p.question[lang]?.toLowerCase().includes(q) || p.topic.toLowerCase().includes(q) || p.subject.toLowerCase().includes(q)
   );
 
-  const filteredUpdates = EXAM_UPDATES_DATA.filter((u) =>
+  const filteredUpdates = examUpdates.filter((u) =>
     !q || u.title[lang]?.toLowerCase().includes(q) || u.exam.toLowerCase().includes(q)
   );
 

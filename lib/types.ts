@@ -72,6 +72,10 @@ export interface Product {
   tableOfContents: string[];
   whatIsIncluded: string[];
   tags: string[];
+  /** True when the admin has uploaded the notes PDF (download is possible). */
+  hasFile?: boolean;
+  /** Completed downloads, shown as social proof on free resources. */
+  downloadCount?: number;
 }
 
 export interface Course {
@@ -106,26 +110,30 @@ export interface Course {
   whatYouWillLearn: string[];
 }
 
+/** A previous-year question. Option ids are A-D, matching quiz questions. */
 export interface PYQItem {
   id: string;
   exam: ExamCategory;
   year: number;
   subject: Subject;
   topic: string;
+  /** Paper the question came from, e.g. "MPSC Rajyaseva Prelims 2024 Paper 1". */
+  source?: string;
+  questionNumber?: number;
   question: {
     mr: string;
     en: string;
     hi: string;
   };
   options: {
-    id: number;
+    id: 'A' | 'B' | 'C' | 'D';
     text: {
       mr: string;
       en: string;
       hi: string;
     };
   }[];
-  correctOption: number;
+  correctOption: 'A' | 'B' | 'C' | 'D';
   explanation: {
     mr: string;
     en: string;

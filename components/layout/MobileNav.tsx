@@ -2,17 +2,17 @@
 
 import React from 'react';
 import { useApp } from '@/lib/store';
-import { Home, BookOpen, HelpCircle, Bell, User } from 'lucide-react';
+import { Home, BookOpen, HelpCircle, Bell, Sparkles } from 'lucide-react';
 
 export function MobileNav() {
-  const { activeView, navigateTo, cart, unreadNotificationsCount } = useApp();
+  const { activeView, navigateTo, unreadNotificationsCount } = useApp();
 
   const items = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'materials', label: 'Materials', icon: BookOpen, badge: cart.length > 0 ? cart.length : undefined },
+    { id: 'materials', label: 'Materials', icon: BookOpen },
     { id: 'pyq', label: 'PYQs', icon: HelpCircle },
+    { id: 'free-resources', label: 'Free', icon: Sparkles },
     { id: 'exam-updates', label: 'Updates', icon: Bell, hasDot: unreadNotificationsCount > 0 },
-    { id: 'dashboard', label: 'Account', icon: User },
   ];
 
   return (
@@ -33,11 +33,6 @@ export function MobileNav() {
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5] text-blue-600' : 'stroke-2 text-slate-500'}`} />
                 {item.hasDot && (
                   <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white" />
-                )}
-                {item.badge && (
-                  <span className="absolute -top-1 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full shadow-xs">
-                    {item.badge}
-                  </span>
                 )}
               </div>
               <span className={`text-[10px] mt-0.5 ${isActive ? 'font-bold text-blue-600' : 'font-medium'}`}>

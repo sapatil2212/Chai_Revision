@@ -2,6 +2,9 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Lets a build run to an alternate output dir (e.g. during local verification while
+  // a dev server still owns .next). Defaults to the standard .next directory.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   eslint: {
     ignoreDuringBuilds: true,
   },

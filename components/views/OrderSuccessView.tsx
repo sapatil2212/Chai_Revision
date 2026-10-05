@@ -1,141 +1,304 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '@/lib/store';
+import { paymentsApi, purchasedDownloadUrl, type Receipt } from '@/lib/paymentsClient';
 import {
-  CheckCircle2,
-  Download,
-  ShieldCheck,
-  FileText,
-  ArrowRight,
-  Sparkles,
-  Key,
+  AlertCircle,
   BookOpen,
+  CheckCircle2,
+  Clock,
+  Download,
+  FileText,
+  RefreshCw,
+  ShieldCheck,
 } from 'lucide-react';
 
+const T = {
+  mr: {
+    successBadge: 'पेमेंट यशस्वी झाले',
+    pendingBadge: 'पेमेंटची पडताळणी सुरू आहे',
+    successTitle: 'अभिनंदन! तुमची डिजिटल लायब्ररी सक्रिय झाली आहे.',
+    pendingTitle: 'तुमचे पेमेंट तपासले जात आहे.',
+    orderNo: 'ऑर्डर क्रमांक',
+    sentTo: 'पावती येथे पाठवली आहे',
+    pendingHelp: 'बँकेकडून पुष्टी मिळताच डाऊनलोड लिंक येथे दिसेल. हे पान उघडे ठेवा किंवा थोड्या वेळाने परत या.',
+    refresh: 'पुन्हा तपासा',
+    purchased: 'तुमचे खरेदी केलेले साहित्य',
+    download: 'PDF डाऊनलोड करा',
+    noFile: 'PDF लवकरच उपलब्ध',
+    locked: 'पेमेंट पूर्ण झाल्यावर उपलब्ध',
+    paidVia: 'पेमेंट पद्धत',
+    paymentId: 'पेमेंट आयडी',
+    subtotal: 'एकूण किंमत',
+    discount: 'सूट',
+    total: 'भरलेली रक्कम',
+    lifetime: 'कायमस्वरूपी प्रवेश — ही लिंक जपून ठेवा.',
+    browse: 'इतर साहित्य ब्राउझ करा',
+    notFound: 'ऑर्डर तपशील सापडला नाही',
+    goMaterials: 'स्टडी मटेरियलकडे जा',
+    loading: 'ऑर्डर उघडत आहे…',
+  },
+  en: {
+    successBadge: 'Payment successful',
+    pendingBadge: 'Verifying your payment',
+    successTitle: 'All set! Your digital library is active.',
+    pendingTitle: 'We are confirming your payment.',
+    orderNo: 'Order number',
+    sentTo: 'Receipt sent to',
+    pendingHelp: 'Your download link appears here as soon as the bank confirms. Keep this page open or come back in a moment.',
+    refresh: 'Check again',
+    purchased: 'Your purchased materials',
+    download: 'Download PDF',
+    noFile: 'PDF coming soon',
+    locked: 'Available once payment completes',
+    paidVia: 'Paid via',
+    paymentId: 'Payment ID',
+    subtotal: 'Subtotal',
+    discount: 'Discount',
+    total: 'Amount paid',
+    lifetime: 'Lifetime access — keep this link safe.',
+    browse: 'Browse more materials',
+    notFound: 'Order not found',
+    goMaterials: 'Go to study materials',
+    loading: 'Loading your order…',
+  },
+  hi: {
+    successBadge: 'भुगतान सफल',
+    pendingBadge: 'भुगतान की पुष्टि हो रही है',
+    successTitle: 'बधाई! आपकी डिजिटल लाइब्रेरी सक्रिय हो गई है।',
+    pendingTitle: 'हम आपके भुगतान की पुष्टि कर रहे हैं।',
+    orderNo: 'ऑर्डर संख्या',
+    sentTo: 'रसीद भेजी गई',
+    pendingHelp: 'बैंक की पुष्टि मिलते ही डाउनलोड लिंक यहां दिखेगा। यह पेज खुला रखें या थोड़ी देर बाद लौटें।',
+    refresh: 'फिर जांचें',
+    purchased: 'आपकी खरीदी गई सामग्री',
+    download: 'PDF डाउनलोड करें',
+    noFile: 'PDF शीघ्र उपलब्ध',
+    locked: 'भुगतान पूरा होने पर उपलब्ध',
+    paidVia: 'भुगतान माध्यम',
+    paymentId: 'भुगतान आईडी',
+    subtotal: 'कुल कीमत',
+    discount: 'छूट',
+    total: 'भुगतान राशि',
+    lifetime: 'आजीवन एक्सेस — यह लिंक सुरक्षित रखें।',
+    browse: 'अन्य सामग्री देखें',
+    notFound: 'ऑर्डर नहीं मिला',
+    goMaterials: 'स्टडी मटेरियल देखें',
+    loading: 'ऑर्डर खुल रहा है…',
+  },
+};
+
+/** Real receipt for a completed order, with the paid download links. */
 export function OrderSuccessView() {
-  const { orders, viewParams, navigateTo, lang } = useApp();
-  const orderId = viewParams.orderId;
-  const currentOrder = orders.find((o) => o.id === orderId) || orders[0];
+  const { viewParams, navigateTo, lang } = useApp();
+  const t = T[lang] ?? T.mr;
+  const { orderId, token } = viewParams;
 
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [error, setError] = useState('');
+  const [checking, setChecking] = useState(false);
+  // Reset to true on mount — see the note in CheckoutView: a prior effect pass's
+  // cleanup must not leave this stuck at false in React Strict Mode.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
-  const handleDownload = (id: string, title: string) => {
-    setDownloadingId(id);
-    setTimeout(() => {
-      setDownloadingId(null);
-      alert(`✅ सुरक्षित डाऊनलोड सुरू झाले!\nसामग्री: ${title}\nसुरक्षा टोकन: ${currentOrder?.downloadToken}`);
-    }, 1000);
+  const load = useCallback(() => {
+    if (!orderId || !token) return Promise.resolve();
+    return paymentsApi
+      .receipt(orderId, token)
+      .then((r) => {
+        if (!mounted.current) return;
+        setReceipt(r);
+        setError('');
+      })
+      .catch((err) => mounted.current && setError((err as Error).message));
+  }, [orderId, token]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  // While the webhook is still confirming, poll briefly so the link appears on its own
+  useEffect(() => {
+    if (!receipt || receipt.paid) return;
+    const id = setInterval(() => void load(), 5000);
+    const stop = setTimeout(() => clearInterval(id), 60_000);
+    return () => {
+      clearInterval(id);
+      clearTimeout(stop);
+    };
+  }, [receipt, load]);
+
+  const recheck = () => {
+    setChecking(true);
+    void load().finally(() => mounted.current && setChecking(false));
   };
 
-  if (!currentOrder) {
+  if (!orderId || !token || error) {
     return (
-      <div className="bg-slate-50 min-h-screen py-16 text-center">
-        <h2 className="text-lg font-bold text-slate-900">ऑर्डर तपशील सापडला नाही</h2>
+      <div className="bg-slate-50 min-h-screen py-16 text-center px-4">
+        <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-3" aria-hidden="true" />
+        <h2 className="text-lg font-bold text-slate-900">{t.notFound}</h2>
+        {error && <p className="text-xs text-slate-500 mt-1">{error}</p>}
         <button
           onClick={() => navigateTo('materials')}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-xs"
+          className="mt-4 px-4 py-2 bg-[#1C2C5B] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
         >
-          स्टडी मटेरियलकडे जा
+          {t.goMaterials}
         </button>
       </div>
     );
   }
 
+  if (!receipt) {
+    return (
+      <div className="bg-slate-50 min-h-screen py-20 text-center" role="status" aria-live="polite">
+        <p className="text-xs text-slate-500 flex items-center justify-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" /> {t.loading}
+        </p>
+      </div>
+    );
+  }
+
+  const paid = receipt.paid;
+
   return (
     <div className="bg-slate-50 min-h-screen py-10">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6 text-left">
-        {/* Success Header Box */}
+        {/* Header */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs text-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600">
-            <CheckCircle2 className="w-8 h-8" />
+          <div
+            className={`w-16 h-16 rounded-full border flex items-center justify-center mx-auto ${
+              paid ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-amber-50 border-amber-200 text-amber-600'
+            }`}
+          >
+            {paid ? <CheckCircle2 className="w-8 h-8" aria-hidden="true" /> : <Clock className="w-8 h-8" aria-hidden="true" />}
           </div>
 
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider bg-emerald-100 px-3 py-1 rounded-full inline-block">
-            पेमेंट यशस्वी झाले (Payment Successful)
+          <span
+            className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full inline-block ${
+              paid ? 'text-emerald-700 bg-emerald-100' : 'text-amber-800 bg-amber-100'
+            }`}
+          >
+            {paid ? t.successBadge : t.pendingBadge}
           </span>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900">
-            अभिनंदन! तुमच्या अभ्यासाची डिजिटल लायब्ररी सक्रिय झाली आहे.
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{paid ? t.successTitle : t.pendingTitle}</h1>
 
-          <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
-            ऑर्डर क्रमांक: <strong className="text-slate-900">{currentOrder.id}</strong> • पावती आणि सुरक्षित डाऊनलोड टोकन तुमच्या नोंदणीकृत खात्यात जोडले गेले आहे.
+          <p className="text-xs sm:text-sm text-slate-500">
+            {t.orderNo}: <strong className="text-slate-900 font-mono">{receipt.orderId}</strong>
+            {receipt.buyer?.email && (
+              <>
+                {' • '}
+                {t.sentTo} <strong className="text-slate-900">{receipt.buyer.email}</strong>
+              </>
+            )}
           </p>
-        </div>
 
-        {/* Security Download Token Callout */}
-        <div className="bg-blue-900 text-white rounded-2xl p-5 border border-blue-800 space-y-3 shadow-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Key className="w-5 h-5 text-blue-300" />
-              <span className="font-extrabold text-sm">सुरक्षित डिजिटल डाऊनलोड टोकन (Secure Token)</span>
+          {!paid && (
+            <div className="space-y-3">
+              <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 max-w-lg mx-auto">
+                {t.pendingHelp}
+              </p>
+              <button
+                onClick={recheck}
+                disabled={checking}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${checking ? 'animate-spin' : ''}`} aria-hidden="true" /> {t.refresh}
+              </button>
             </div>
-            <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded font-bold">ACTIVE</span>
-          </div>
-
-          <div className="p-3 bg-blue-950/60 rounded-xl font-mono text-xs text-blue-200 break-all border border-blue-700/50 flex items-center justify-between">
-            <span>{currentOrder.downloadToken}</span>
-            <span className="text-[10px] text-blue-300/80 font-sans">{currentOrder.tokenExpiresAt}</span>
-          </div>
-
-          <p className="text-[11px] text-blue-200/80">
-            * हे टोकन केवळ तुमच्या वैयक्तिक उपकरणांवर अधिकृत वाचनासाठी सक्रिय आहे. सुरक्षित एनक्रिप्शनद्वारे पीडीएफ डाउनलोड सुरक्षित केले आहे.
-          </p>
+          )}
         </div>
 
-        {/* Purchased Items & Direct Downloads */}
+        {/* Purchased items + download links */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
           <h3 className="font-extrabold text-sm sm:text-base text-slate-900 pb-2 border-b border-slate-100">
-            तुमचे खरेदी केलेले स्टडी मटेरियल ({currentOrder.items.length})
+            {t.purchased} ({receipt.items.length})
           </h3>
 
           <div className="space-y-3">
-            {currentOrder.items.map((item) => (
+            {receipt.items.map((item) => (
               <div
-                key={item.id}
+                key={item.materialId}
                 className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={item.coverImage}
-                    alt={item.title[lang]}
-                    className="w-12 h-16 object-cover rounded-lg shadow-2xs shrink-0"
-                  />
+                  <span className="w-10 h-12 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                    <FileText className="w-5 h-5" aria-hidden="true" />
+                  </span>
                   <div className="min-w-0">
                     <span className="text-[10px] font-bold text-blue-600 uppercase">{item.exam}</span>
-                    <h4 className="font-bold text-sm text-slate-900 truncate">{item.title[lang]}</h4>
-                    <p className="text-xs text-slate-500">{item.pages} पृष्ठे • सर्चबल डिजिटल PDF</p>
+                    <h4 className="font-bold text-sm text-slate-900">{item.title}</h4>
+                    <p className="text-xs text-slate-500 font-mono">₹{item.price}</p>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleDownload(item.id, item.title.mr)}
-                  disabled={downloadingId === item.id}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all shrink-0 shadow-xs active:scale-98 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5 text-white" />
-                  <span>{downloadingId === item.id ? 'डाउनलोड होत आहे...' : 'PDF डाऊनलोड करा'}</span>
-                </button>
+                {item.downloadToken && item.hasFile ? (
+                  <a
+                    href={purchasedDownloadUrl(item.slug, item.downloadToken)}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all shrink-0 shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>{t.download}</span>
+                  </a>
+                ) : (
+                  <span className="w-full sm:w-auto text-center px-5 py-2.5 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl shrink-0">
+                    {!paid ? t.locked : t.noFile}
+                  </span>
+                )}
               </div>
             ))}
           </div>
+
+          {paid && (
+            <p className="text-[11px] text-slate-500 flex items-center gap-2 pt-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" aria-hidden="true" />
+              {t.lifetime}
+            </p>
+          )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Amounts */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs text-xs space-y-1.5">
+          <div className="flex justify-between text-slate-600">
+            <span>{t.subtotal}</span>
+            <span className="font-mono text-slate-900 font-semibold">₹{receipt.subtotal}</span>
+          </div>
+          {receipt.discount > 0 && (
+            <div className="flex justify-between text-emerald-700 font-bold">
+              <span>
+                {t.discount}
+                {receipt.couponCode ? ` (${receipt.couponCode})` : ''}
+              </span>
+              <span className="font-mono">−₹{receipt.discount}</span>
+            </div>
+          )}
+          <div className="border-t border-slate-100 pt-2 flex justify-between font-black text-sm text-slate-900">
+            <span>{t.total}</span>
+            <span className="font-mono">₹{receipt.total}</span>
+          </div>
+          {paid && (receipt.paymentMethod || receipt.paymentId) && (
+            <p className="text-[10px] text-slate-400 font-mono pt-1.5 border-t border-slate-100">
+              {receipt.paymentMethod ? `${t.paidVia}: ${receipt.paymentMethod.toUpperCase()}` : ''}
+              {receipt.paymentId ? ` • ${t.paymentId}: ${receipt.paymentId}` : ''}
+            </p>
+          )}
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
-            onClick={() => navigateTo('dashboard')}
-            className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/20 active:scale-98 cursor-pointer"
-          >
-            <BookOpen className="w-4 h-4 text-white" />
-            <span>माझ्या डिजिटल लायब्ररीकडे जा (My Dashboard)</span>
-          </button>
-          <button
             onClick={() => navigateTo('materials')}
-            className="py-3 px-5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs sm:text-sm transition-colors cursor-pointer"
+            className="flex-1 py-3 bg-[#1C2C5B] hover:bg-blue-900 text-white font-bold rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer"
           >
-            इतर साहित्य ब्राउझ करा
+            <BookOpen className="w-4 h-4" aria-hidden="true" />
+            <span>{t.browse}</span>
           </button>
         </div>
       </div>

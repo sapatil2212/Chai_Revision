@@ -2,21 +2,20 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
-import { EXAM_UPDATES_DATA } from '@/lib/data';
 import { Bell, Calendar, ExternalLink, ArrowRight, ArrowLeft, Download, ShieldCheck, Share2 } from 'lucide-react';
 
 export function ExamUpdatesView() {
-  const { lang, t, viewParams, navigateTo } = useApp();
+  const { lang, t, viewParams, navigateTo, examUpdates } = useApp();
   const selectedSlug = viewParams.slug;
 
   const [filterExam, setFilterExam] = useState<string>('All');
   const [filterBadge, setFilterBadge] = useState<string>('All');
 
   const selectedUpdate = selectedSlug
-    ? EXAM_UPDATES_DATA.find((u) => u.slug === selectedSlug)
+    ? examUpdates.find((u) => u.slug === selectedSlug)
     : null;
 
-  const filteredUpdates = EXAM_UPDATES_DATA.filter((u) => {
+  const filteredUpdates = examUpdates.filter((u) => {
     if (filterExam !== 'All' && u.exam !== filterExam) return false;
     if (filterBadge !== 'All' && u.badge !== filterBadge) return false;
     return true;

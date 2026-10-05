@@ -114,76 +114,68 @@ export function ExamCategoriesSection() {
   };
 
   return (
-    <section id="exam-categories" className="py-16 sm:py-20 md:py-24 bg-gradient-to-b from-white via-slate-50/30 to-white border-b border-slate-200/80">
+    <section id="exam-categories" className="py-10 sm:py-12 md:py-14 bg-white border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Heading */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-12 gap-4 text-left">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 gap-3 text-left">
           <div>
-            <span className="text-xs font-semibold text-blue-600 tracking-wider uppercase bg-blue-50/80 border border-blue-200/70 px-3 py-0.5 rounded-full inline-block mb-2">
+            <span className="text-[11px] font-medium text-slate-600 tracking-wide uppercase bg-slate-100 border border-slate-200/70 px-2.5 py-0.5 rounded-full inline-block mb-1.5">
               लक्ष्यित परीक्षा निवड
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
               {t.sections.examCategories}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-2 font-normal max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal max-w-2xl leading-relaxed">
               {t.sections.examCategoriesSub}
             </p>
           </div>
 
           <button
             onClick={() => navigateTo('materials')}
-            className="h-9 px-4 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-50/80 hover:bg-blue-100/80 rounded-full border border-blue-200/80 inline-flex items-center gap-1.5 transition-all self-start md:self-end shrink-0 cursor-pointer shadow-2xs"
+            className="h-8.5 px-3.5 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/80 inline-flex items-center gap-1.5 transition-all self-start md:self-end shrink-0 cursor-pointer shadow-2xs"
           >
             <span>सर्व परीक्षा साहित्य पाहा</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
           </button>
         </div>
 
         {/* 10 Exam Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {EXAM_CATEGORIES_DATA.map((exam) => {
-            const theme = getCategoryTheme(exam.id);
             return (
               <div
                 key={exam.id}
                 onClick={() => handleCategoryClick(exam.id)}
-                className={`bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl sm:rounded-3xl p-4 transition-all duration-300 cursor-pointer flex flex-col justify-between group hover:-translate-y-0.5 hover:shadow-[0_10px_25px_rgba(15,23,42,0.05)] relative overflow-hidden`}
+                className="bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:-translate-y-0.5 hover:shadow-2xs text-left"
               >
-                {/* Subtle soft gradient background glow */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${theme.glow} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
-
-                <div className="relative z-10 text-left">
+                <div>
                   {/* Header with Icon & Optional Badge */}
                   <div className="flex items-center justify-between mb-3">
-                    <div
-                      className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all duration-300 shadow-2xs ${theme.iconBg}`}
-                    >
+                    <div className="w-9 h-9 rounded-xl border border-slate-200/80 bg-slate-50 text-slate-700 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 flex items-center justify-center transition-all duration-200 shadow-2xs">
                       {getIcon(exam.iconName)}
                     </div>
                     {exam.badge && (
-                      <span
-                        className={`text-[9px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider border ${theme.badge}`}
-                      >
+                      <span className="text-[9px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider border border-slate-200 bg-slate-50 text-slate-600">
                         {exam.badge}
                       </span>
                     )}
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="font-semibold text-xs sm:text-sm text-slate-800 group-hover:text-blue-700 transition-colors line-clamp-1">
+                  <h3 className="font-medium text-xs sm:text-sm text-slate-800 group-hover:text-slate-900 transition-colors line-clamp-1">
                     {exam.name[lang]}
                   </h3>
-                  <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed font-normal">
+                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-normal">
                     {exam.desc[lang]}
                   </p>
                 </div>
 
                 {/* Footer Count & Arrow */}
-                <div className="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] relative z-10">
-                  <span className="text-slate-500 group-hover:text-slate-700 font-normal">
+                <div className="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400 group-hover:text-slate-600 font-normal">
                     {exam.resourcesCount}+ साधने
                   </span>
-                  <span className="text-blue-600 font-semibold group-hover:translate-x-1 transition-transform">
+                  <span className="text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all">
                     →
                   </span>
                 </div>

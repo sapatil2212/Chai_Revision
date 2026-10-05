@@ -34,7 +34,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  KeyRound,
   SlidersHorizontal,
   Copy,
   Check,
@@ -47,7 +46,15 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { ChaiLogo } from '@/components/brand/ChaiLogo';
-import { STUDY_MATERIALS_DATA, EXAM_UPDATES_DATA } from '@/lib/data';
+import { adminApi, AdminApiError, type AdminMaterial, type AdminUpdate } from '@/lib/adminApi';
+import { MaterialFormModal } from '@/components/admin/MaterialFormModal';
+import { MaterialsManager } from '@/components/admin/MaterialsManager';
+import { QuizzesManager } from '@/components/admin/quiz/QuizzesManager';
+import { QuizStudentsManager } from '@/components/admin/quiz/QuizStudentsManager';
+import { PyqsManager } from '@/components/admin/pyq/PyqsManager';
+import { UpdateFormModal } from '@/components/admin/UpdateFormModal';
+import { SuperadminOverview } from '@/components/admin/SuperadminOverview';
+import { AdminDialogProvider, useAdminDialog } from '@/components/admin/AdminDialogContext';
 
 // =========================================================================
 // TYPES & MOCK DATA
@@ -344,7 +351,8 @@ export default function SuperadminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [adminPin, setAdminPin] = useState('');
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [adminEmail, setAdminEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [capsLockActive, setCapsLockActive] = useState(false);
@@ -361,8 +369,9 @@ export default function SuperadminPage() {
   const [globalSearch, setGlobalSearch] = useState('');
 
   // Live Data States
-  const [materials, setMaterials] = useState(() => [...STUDY_MATERIALS_DATA]);
-  const [updates, setUpdates] = useState(() => [...EXAM_UPDATES_DATA]);
+  const [materials, setMaterials] = useState<AdminMaterial[]>([]);
+  const [updates, setUpdates] = useState<AdminUpdate[]>([]);
+  const [dataLoading, setDataLoading] = useState(false);
   const [students, setStudents] = useState<StudentRecord[]>(INITIAL_STUDENTS);
   const [transactions, setTransactions] = useState<TransactionRecord[]>(INITIAL_TRANSACTIONS);
   const [logs, setLogs] = useState<AuditLogRecord[]>(INITIAL_LOGS);
@@ -374,23 +383,22 @@ export default function SuperadminPage() {
 
   // Interactive Modals State
   const [activeModal, setActiveModal] = useState<
-    null | 'add_material' | 'add_update' | 'edit_price' | 'view_student'
+    null | 'material_form' | 'update_form' | 'edit_price' | 'view_student'
   >(null);
   const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<{ id: string; title: string; price: number } | null>(null);
+  // Full-form editing targets (null = creating a new item)
+  const [materialFormTarget, setMaterialFormTarget] = useState<AdminMaterial | null>(null);
+  const [updateFormTarget, setUpdateFormTarget] = useState<AdminUpdate | null>(null);
 
-  // Form states for adding items
-  const [newMaterialTitle, setNewMaterialTitle] = useState('');
-  const [newMaterialExam, setNewMaterialExam] = useState('MPSC');
-  const [newMaterialSubject, setNewMaterialSubject] = useState('General Studies');
-  const [newMaterialPrice, setNewMaterialPrice] = useState('129');
-  const [newMaterialPages, setNewMaterialPages] = useState('96');
-
-  const [newUpdateTitle, setNewUpdateTitle] = useState('');
-  const [newUpdateExam, setNewUpdateExam] = useState('MPSC');
-  const [newUpdateBadge, setNewUpdateBadge] = useState('URGENT');
-  const [newUpdateSummary, setNewUpdateSummary] = useState('');
-  const [newUpdateLink, setNewUpdateLink] = useState('https://mpsc.gov.in');
+  const openMaterialForm = (item: AdminMaterial | null) => {
+    setMaterialFormTarget(item);
+    setActiveModal('material_form');
+  };
+  const openUpdateForm = (item: AdminUpdate | null) => {
+    setUpdateFormTarget(item);
+    setActiveModal('update_form');
+  };
 
   // Settings Toggles
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -408,14 +416,40 @@ export default function SuperadminPage() {
     }, 3500);
   };
 
-  // Check saved session on mount
-  useEffect(() => {
-    const savedAuth = localStorage.getItem('chai_superadmin_auth');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-      const savedUser = localStorage.getItem('chai_superadmin_user');
-      if (savedUser) setUsername(savedUser);
+  // Called when any admin API returns 401 (session expired / revoked)
+  const handleSessionExpired = () => {
+    setIsAuthenticated(false);
+    setActiveModal(null);
+    setErrorMsg('Your session has expired. Please sign in again.');
+  };
+
+  // Load catalog data from the database
+  const loadDashboardData = async () => {
+    setDataLoading(true);
+    try {
+      const [m, u] = await Promise.all([adminApi.listMaterials(), adminApi.listUpdates()]);
+      setMaterials(m.items);
+      setUpdates(u.items);
+    } catch (err) {
+      if (err instanceof AdminApiError && err.status === 401) handleSessionExpired();
+      else showToast(`Failed to load data: ${(err as Error).message}`, 'error');
+    } finally {
+      setDataLoading(false);
     }
+  };
+
+  // Check server session (HttpOnly cookie) on mount
+  useEffect(() => {
+    adminApi
+      .session()
+      .then((s) => {
+        setAdminEmail(s.email);
+        setIsAuthenticated(true);
+        loadDashboardData();
+      })
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setCheckingSession(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Monitor CapsLock key
@@ -428,13 +462,13 @@ export default function SuperadminPage() {
   };
 
   // Login Handler
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
     if (!username.trim()) {
-      setErrorMsg('Please enter Superadmin Username or Email.');
+      setErrorMsg('Please enter your admin email.');
       return;
     }
     if (!password) {
@@ -443,166 +477,105 @@ export default function SuperadminPage() {
     }
 
     setIsLoading(true);
-
-    setTimeout(() => {
-      const isValidUser =
-        username.toLowerCase() === 'superadmin@chairevision.com' ||
-        username.toLowerCase() === 'superadmin' ||
-        username.toLowerCase() === 'admin';
-      const isValidPass =
-        password === 'ChaiSuperAdmin#2026' ||
-        password === 'admin123' ||
-        password === 'superadmin';
-
-      if (isValidUser && isValidPass) {
-        setIsLoading(false);
-        setSuccessMsg('Authentication successful! Entering Admin Console...');
-        if (rememberMe) {
-          localStorage.setItem('chai_superadmin_auth', 'true');
-          localStorage.setItem('chai_superadmin_user', username);
-        }
-        setTimeout(() => {
-          setIsAuthenticated(true);
-          setSuccessMsg('');
-          showToast(`Welcome back, ${username || 'Superadmin'}! Session active.`, 'success');
-        }, 600);
-      } else {
-        setIsLoading(false);
-        setErrorMsg('Invalid Superadmin credentials. Please verify your details.');
-      }
-    }, 750);
+    try {
+      const res = await adminApi.login(username.trim(), password, rememberMe);
+      setAdminEmail(res.email);
+      setPassword('');
+      setIsAuthenticated(true);
+      setSuccessMsg('');
+      loadDashboardData();
+      showToast(`Welcome back, ${res.email}! Session active.`, 'success');
+    } catch (err) {
+      setErrorMsg((err as Error).message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Logout Handler
-  const handleLogout = () => {
-    localStorage.removeItem('chai_superadmin_auth');
-    localStorage.removeItem('chai_superadmin_user');
+  const handleLogout = async () => {
+    try {
+      await adminApi.logout();
+    } catch {
+      /* cookie is cleared server-side; ignore network errors */
+    }
     setIsAuthenticated(false);
+    setAdminEmail('');
+    setMaterials([]);
+    setUpdates([]);
     setUsername('');
     setPassword('');
-    setAdminPin('');
     setErrorMsg('');
     setSuccessMsg('');
     showToast('Signed out of Superadmin Console successfully.', 'info');
   };
 
-  // Add New Material Action
-  const handleCreateMaterial = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMaterialTitle.trim()) {
-      showToast('Please provide a title for the study notes.', 'error');
-      return;
-    }
+  // Shared handler for API failures in dashboard actions
+  const handleApiFailure = (err: unknown, action: string) => {
+    if (err instanceof AdminApiError && err.status === 401) return handleSessionExpired();
+    showToast(`${action} failed: ${(err as Error).message}`, 'error');
+  };
 
-    const priceNum = parseInt(newMaterialPrice, 10) || 119;
-    const pagesNum = parseInt(newMaterialPages, 10) || 80;
-
-    const newMatItem = {
-      id: `mat-${Date.now()}`,
-      slug: newMaterialTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      title: {
-        en: newMaterialTitle,
-        mr: newMaterialTitle,
-        hi: newMaterialTitle,
-      },
-      subtitle: {
-        en: `${newMaterialExam} • ${newMaterialSubject} Revision Notes 2026`,
-        mr: `${newMaterialExam} • ${newMaterialSubject} रिव्हिजन नोट्स`,
-        hi: `${newMaterialExam} • ${newMaterialSubject} रिवीजन नोट्स`,
-      },
-      description: {
-        en: `High-yield concise revision notes compiled for Maharashtra aspirants preparing for ${newMaterialExam}.`,
-        mr: `महाराष्ट्र स्पर्धा परीक्षेसाठी विशेष रिव्हिजन डिजिटल नोट्स.`,
-        hi: `महाराष्ट्र प्रतियोगी परीक्षा के लिए विशेष रिवीजन डिजिटल नोट्स.`,
-      },
-      exam: newMaterialExam,
-      subject: newMaterialSubject,
-      language: 'Marathi',
-      materialType: 'Short Notes',
-      coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
-      samplePages: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80'],
-      pages: pagesNum,
-      originalPrice: priceNum + 100,
-      discountedPrice: priceNum,
-      rating: 4.9,
-      reviewsCount: 14,
-      lastUpdated: 'Today',
-      featured: true,
-      bestseller: false,
-      fileSize: '14.2 MB',
-      tableOfContents: ['1. Core Concepts & Overview', '2. Solved Question Set', '3. Important Summary Points'],
-      whatIsIncluded: ['High Resolution Digital PDF', 'Instant Download', 'Revision Formula Sheet'],
-      tags: [newMaterialExam, newMaterialSubject, 'Maharashtra', 'Notes'],
-    };
-
-    setMaterials([newMatItem as any, ...materials]);
+  // Material created/edited via the full form modal
+  const handleMaterialSaved = (item: AdminMaterial, mode: 'created' | 'updated') => {
+    setMaterials((prev) => (mode === 'created' ? [item, ...prev] : prev.map((m) => (m.id === item.id ? item : m))));
     setActiveModal(null);
-    setNewMaterialTitle('');
-    showToast(`"${newMaterialTitle}" added to Study Materials catalog!`, 'success');
+    showToast(
+      mode === 'created' ? `"${item.title.en}" published to the catalog.` : `"${item.title.en}" updated.`,
+      'success'
+    );
+  };
+
+  // Exam update created/edited via the form modal
+  const handleUpdateSaved = (item: AdminUpdate, mode: 'created' | 'updated') => {
+    setUpdates((prev) => (mode === 'created' ? [item, ...prev] : prev.map((u) => (u.id === item.id ? item : u))));
+    setActiveModal(null);
+    showToast(mode === 'created' ? `Circular "${item.title.en}" published.` : 'Circular updated.', 'success');
   };
 
   // Quick Price Update Action
-  const handleSavePrice = (e: React.FormEvent) => {
+  const handleSavePrice = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMaterial) return;
-
-    setMaterials((prev) =>
-      prev.map((item) =>
-        item.id === editingMaterial.id
-          ? { ...item, discountedPrice: editingMaterial.price }
-          : item
-      )
-    );
-    setActiveModal(null);
-    showToast(`Price updated to ₹${editingMaterial.price} successfully!`, 'success');
-  };
-
-  // Add New Circular Action
-  const handleCreateUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUpdateTitle.trim()) {
-      showToast('Please provide a circular title.', 'error');
-      return;
+    try {
+      const { item } = await adminApi.updateMaterial(editingMaterial.id, {
+        discountedPrice: editingMaterial.price,
+      });
+      setMaterials((prev) => prev.map((m) => (m.id === item.id ? item : m)));
+      setActiveModal(null);
+      showToast(`Price updated to ₹${item.discountedPrice} successfully!`, 'success');
+    } catch (err) {
+      handleApiFailure(err, 'Price update');
     }
-
-    const newUpdateItem = {
-      id: `upd-${Date.now()}`,
-      title: {
-        en: newUpdateTitle,
-        mr: newUpdateTitle,
-        hi: newUpdateTitle,
-      },
-      exam: newUpdateExam,
-      badge: newUpdateBadge,
-      publishedDate: 'Today',
-      shortSummary: {
-        en: newUpdateSummary || 'Important official announcement published by Maharashtra authority.',
-        mr: newUpdateSummary || 'महाराष्ट्र स्पर्धा परीक्षा अधिकृत परिपत्रक प्रसिद्ध.',
-        hi: newUpdateSummary || 'महाराष्ट्र प्रतियोगी परीक्षा आधिकारिक सूचना जारी.',
-      },
-      officialLink: newUpdateLink || 'https://mpsc.gov.in',
-      isNew: true,
-    };
-
-    setUpdates([newUpdateItem as any, ...updates]);
-    setActiveModal(null);
-    setNewUpdateTitle('');
-    setNewUpdateSummary('');
-    showToast(`Circular "${newUpdateTitle}" broadcasted to students!`, 'success');
   };
 
   // Delete Material Handler
-  const handleDeleteMaterial = (id: string, title: string) => {
-    if (confirm(`Are you sure you want to remove "${title}"?`)) {
-      setMaterials((prev) => prev.filter((item) => item.id !== id));
-      showToast(`Item removed from catalog.`, 'info');
+  const handleDeleteMaterial = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to remove "${title}"?`)) return;
+    try {
+      const res = await adminApi.deleteMaterial(id);
+      if (res.archived) {
+        setMaterials((prev) => prev.map((m) => (m.id === id ? { ...m, isPublished: false } : m)));
+        showToast('Material has existing purchases, so it was unpublished instead of deleted.', 'info');
+      } else {
+        setMaterials((prev) => prev.filter((item) => item.id !== id));
+        showToast('Item removed from catalog.', 'info');
+      }
+    } catch (err) {
+      handleApiFailure(err, 'Delete');
     }
   };
 
   // Delete Circular Handler
-  const handleDeleteUpdate = (id: string) => {
-    setUpdates((prev) => prev.filter((item) => item.id !== id));
-    showToast(`Circular removed.`, 'info');
+  const handleDeleteUpdate = async (id: string, title: string) => {
+    if (!confirm(`Delete circular "${title}"?`)) return;
+    try {
+      await adminApi.deleteUpdate(id);
+      setUpdates((prev) => prev.filter((item) => item.id !== id));
+      showToast('Circular removed.', 'info');
+    } catch (err) {
+      handleApiFailure(err, 'Delete');
+    }
   };
 
   // Export Financial CSV Action
@@ -680,6 +653,17 @@ export default function SuperadminPage() {
   // =========================================================================
   // VIEW: AUTHENTICATED SUPERADMIN COMMAND CENTER (PROFESSIONAL UI/UX)
   // =========================================================================
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center" role="status" aria-live="polite">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span>Checking session…</span>
+        </div>
+      </div>
+    );
+  }
+
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-['Poppins',sans-serif] selection:bg-blue-100 selection:text-blue-900 relative">
@@ -879,7 +863,7 @@ export default function SuperadminPage() {
                 {!sidebarCollapsed && (
                   <div className="min-w-0 text-left">
                     <p className="text-xs font-bold text-slate-900 truncate">Super Administrator</p>
-                    <p className="text-[10px] text-slate-400 truncate">superadmin@chairevision.com</p>
+                    <p className="text-[10px] text-slate-400 truncate">{adminEmail}</p>
                   </div>
                 )}
               </div>
@@ -1050,7 +1034,7 @@ export default function SuperadminPage() {
               {/* Quick Add Button */}
               <div className="relative hidden sm:block">
                 <button
-                  onClick={() => setActiveModal('add_material')}
+                  onClick={() => openMaterialForm(null)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1C2C5B] hover:bg-blue-900 text-white rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -1101,14 +1085,14 @@ export default function SuperadminPage() {
 
                 <div className="flex items-center gap-2.5 shrink-0">
                   <button
-                    onClick={() => setActiveModal('add_update')}
+                    onClick={() => openUpdateForm(null)}
                     className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <Bell className="w-3.5 h-3.5 text-blue-700" />
                     <span>Post Circular</span>
                   </button>
                   <button
-                    onClick={() => setActiveModal('add_material')}
+                    onClick={() => openMaterialForm(null)}
                     className="px-3.5 py-2 rounded-xl bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -1361,7 +1345,7 @@ export default function SuperadminPage() {
                     <span>Export CSV</span>
                   </button>
                   <button
-                    onClick={() => setActiveModal('add_material')}
+                    onClick={() => openMaterialForm(null)}
                     className="flex items-center gap-1.5 px-4 py-2 bg-[#1C2C5B] hover:bg-blue-900 text-white rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -1372,7 +1356,7 @@ export default function SuperadminPage() {
 
               {/* Filter Pills */}
               <div className="flex flex-wrap items-center gap-2">
-                {['All', 'MPSC', 'Combine', 'Police Bharti', 'Talathi', 'Saralseva'].map((cat) => (
+                {['All', ...Array.from(new Set(materials.map((m) => m.exam)))].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setMaterialFilterCategory(cat)}
@@ -1386,7 +1370,7 @@ export default function SuperadminPage() {
                   </button>
                 ))}
                 <span className="text-xs text-slate-400 font-mono ml-auto">
-                  Showing {filteredMaterials.length} of {materials.length} titles
+                  {dataLoading ? 'Loading from database…' : `Showing ${filteredMaterials.length} of ${materials.length} titles`}
                 </span>
               </div>
 
@@ -1423,12 +1407,26 @@ export default function SuperadminPage() {
                           </td>
                           <td className="py-3.5 px-4 font-mono text-amber-600 font-semibold">{item.rating} ★</td>
                           <td className="py-3.5 px-4">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              Active
-                            </span>
+                            {item.isPublished ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Published
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                Draft
+                              </span>
+                            )}
                           </td>
-                          <td className="py-3.5 px-4 text-right space-x-1">
+                          <td className="py-3.5 px-4 text-right space-x-1 whitespace-nowrap">
+                            <button
+                              onClick={() => openMaterialForm(item)}
+                              className="px-2 py-1 text-[11px] font-semibold text-slate-600 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                              title="Edit all details"
+                            >
+                              Edit
+                            </button>
                             <button
                               onClick={() => {
                                 setEditingMaterial({
@@ -1475,7 +1473,7 @@ export default function SuperadminPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setActiveModal('add_update')}
+                  onClick={() => openUpdateForm(null)}
                   className="flex items-center gap-1.5 px-4 py-2 bg-[#1C2C5B] hover:bg-blue-900 text-white rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -1497,6 +1495,11 @@ export default function SuperadminPage() {
                         <span className="text-xs text-slate-600 font-semibold">{update.exam}</span>
                         <span className="text-slate-300">•</span>
                         <span className="text-xs text-slate-400 font-mono">{update.publishedDate}</span>
+                        {!update.isPublished && (
+                          <span className="px-1.5 py-0.5 rounded-sm bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-semibold">
+                            Draft
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-sm font-bold text-slate-900">
                         {update.title?.en || update.title?.mr}
@@ -1516,7 +1519,16 @@ export default function SuperadminPage() {
                         Official Portal ↗
                       </a>
                       <button
-                        onClick={() => handleDeleteUpdate(update.id)}
+                        onClick={() => openUpdateForm(update)}
+                        className="p-1.5 text-slate-400 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                        title="Edit Announcement"
+                        aria-label="Edit announcement"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUpdate(update.id, update.title?.en || update.title?.mr)}
+                        aria-label="Delete announcement"
                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                         title="Delete Announcement"
                       >
@@ -1826,109 +1838,13 @@ export default function SuperadminPage() {
           )}
         </div>
 
-        {/* =================================================================== */}
-        {/* INTERACTIVE MODAL: ADD STUDY MATERIAL */}
-        {/* =================================================================== */}
-        {activeModal === 'add_material' && (
-          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-[#1E2653] flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-blue-700" />
-                  <span>Add Study Material</span>
-                </h3>
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateMaterial} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">Notes Title (English)</label>
-                  <input
-                    type="text"
-                    required
-                    value={newMaterialTitle}
-                    onChange={(e) => setNewMaterialTitle(e.target.value)}
-                    placeholder="e.g. MPSC Economics & Budget High-Speed Revision"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-hidden focus:border-blue-600 focus:bg-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">Exam Category</label>
-                    <select
-                      value={newMaterialExam}
-                      onChange={(e) => setNewMaterialExam(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
-                    >
-                      <option value="MPSC">MPSC Rajyaseva</option>
-                      <option value="Combine">Combine (PSI/STI/ASO)</option>
-                      <option value="Police Bharti">Police Bharti</option>
-                      <option value="Talathi">Talathi Bharti</option>
-                      <option value="Saralseva">Saralseva / ZP</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">Subject</label>
-                    <input
-                      type="text"
-                      required
-                      value={newMaterialSubject}
-                      onChange={(e) => setNewMaterialSubject(e.target.value)}
-                      placeholder="e.g. Geography / Law"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">Price (₹ INR)</label>
-                    <input
-                      type="number"
-                      required
-                      value={newMaterialPrice}
-                      onChange={(e) => setNewMaterialPrice(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">Page Count</label>
-                    <input
-                      type="number"
-                      required
-                      value={newMaterialPages}
-                      onChange={(e) => setNewMaterialPages(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs font-bold shadow-xs cursor-pointer"
-                  >
-                    Publish Material
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        {activeModal === 'material_form' && (
+          <MaterialFormModal
+            initial={materialFormTarget}
+            onClose={() => setActiveModal(null)}
+            onSaved={handleMaterialSaved}
+            onUnauthorized={handleSessionExpired}
+          />
         )}
 
         {/* =================================================================== */}
@@ -1984,106 +1900,13 @@ export default function SuperadminPage() {
           </div>
         )}
 
-        {/* =================================================================== */}
-        {/* INTERACTIVE MODAL: ADD CIRCULAR */}
-        {/* =================================================================== */}
-        {activeModal === 'add_update' && (
-          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-[#1E2653] flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-blue-700" />
-                  <span>Broadcast Exam Circular</span>
-                </h3>
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateUpdate} className="space-y-3.5">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">Circular Headline</label>
-                  <input
-                    type="text"
-                    required
-                    value={newUpdateTitle}
-                    onChange={(e) => setNewUpdateTitle(e.target.value)}
-                    placeholder="e.g. MPSC Rajyaseva 2026 Hall Ticket Download Link Activated"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">Exam Body</label>
-                    <input
-                      type="text"
-                      required
-                      value={newUpdateExam}
-                      onChange={(e) => setNewUpdateExam(e.target.value)}
-                      placeholder="MPSC / Police / ZP"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">Badge Label</label>
-                    <select
-                      value={newUpdateBadge}
-                      onChange={(e) => setNewUpdateBadge(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold"
-                    >
-                      <option value="URGENT">URGENT</option>
-                      <option value="NEW">NEW</option>
-                      <option value="IMPORTANT">IMPORTANT</option>
-                      <option value="SYLLABUS">SYLLABUS</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">Short Summary</label>
-                  <textarea
-                    rows={2}
-                    value={newUpdateSummary}
-                    onChange={(e) => setNewUpdateSummary(e.target.value)}
-                    placeholder="Brief explanation for students..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">Official Link URL</label>
-                  <input
-                    type="url"
-                    value={newUpdateLink}
-                    onChange={(e) => setNewUpdateLink(e.target.value)}
-                    placeholder="https://mpsc.gov.in"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-mono"
-                  />
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl bg-[#1C2C5B] hover:bg-blue-900 text-white text-xs font-bold shadow-xs cursor-pointer"
-                  >
-                    Broadcast Now
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        {activeModal === 'update_form' && (
+          <UpdateFormModal
+            initial={updateFormTarget}
+            onClose={() => setActiveModal(null)}
+            onSaved={handleUpdateSaved}
+            onUnauthorized={handleSessionExpired}
+          />
         )}
 
         {/* =================================================================== */}
@@ -2249,19 +2072,21 @@ export default function SuperadminPage() {
             <form onSubmit={handleLogin} className="space-y-4">
               {/* Username Field */}
               <div className="space-y-1.5 text-left">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Superadmin Username or Email <span className="text-rose-500">*</span>
+                <label htmlFor="admin-email" className="block text-xs font-semibold text-slate-700">
+                  Admin Email <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <UserIcon className="w-4 h-4" />
                   </div>
                   <input
-                    type="text"
+                    id="admin-email"
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="superadmin@chairevision.com"
+                    type="email"
+                    autoComplete="username"
+                    placeholder="admin@example.com"
                     className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all shadow-2xs font-['Poppins',sans-serif]"
                   />
                 </div>
@@ -2270,8 +2095,8 @@ export default function SuperadminPage() {
               {/* Password Field */}
               <div className="space-y-1.5 text-left">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Security Password <span className="text-rose-500">*</span>
+                  <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-700">
+                    Password <span className="text-rose-500">*</span>
                   </label>
                   {capsLockActive && (
                     <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-1 font-mono font-medium">
@@ -2284,7 +2109,9 @@ export default function SuperadminPage() {
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
+                    id="admin-password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -2298,29 +2125,10 @@ export default function SuperadminPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
                     title={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
-                </div>
-              </div>
-
-              {/* Optional 2FA PIN / Passkey */}
-              <div className="space-y-1.5 text-left">
-                <label className="block text-xs font-medium text-slate-600">
-                  Admin Security PIN <span className="text-slate-400 text-[10px]">(Optional / 4-Digit)</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <KeyRound className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={adminPin}
-                    onChange={(e) => setAdminPin(e.target.value)}
-                    placeholder="e.g. 9821"
-                    className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all font-mono shadow-2xs"
-                  />
                 </div>
               </div>
 

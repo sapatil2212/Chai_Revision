@@ -35,34 +35,34 @@ export function WhyChaiRevisionSection() {
   ];
 
   return (
-    <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-b from-white via-slate-50/50 to-white border-b border-slate-200/80">
+    <section className="py-10 sm:py-12 md:py-14 bg-gradient-to-b from-white via-slate-50/30 to-white border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-semibold text-blue-600 tracking-wider uppercase bg-blue-50/80 border border-blue-200/70 px-3 py-0.5 rounded-full inline-block">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+          <span className="text-[11px] font-medium text-slate-600 tracking-wide uppercase bg-slate-100 border border-slate-200/70 px-2.5 py-0.5 rounded-full inline-block">
             विश्वास व गुणवत्ता
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight mt-2">
+          <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight mt-1.5">
             {t.sections.whyUsTitle}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-2 font-normal">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
             {t.sections.whyUsSub}
           </p>
         </div>
 
         {/* 4 Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {reasons.map((r, idx) => {
             const Icon = r.icon;
             return (
               <div
                 key={idx}
-                className="bg-white border border-slate-200/80 rounded-3xl p-6 text-left shadow-2xs hover:shadow-[0_12px_30px_rgba(15,23,42,0.06)] hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
+                className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 text-left shadow-2xs hover:shadow-xs hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
-                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-4 shadow-2xs ${r.color}`}>
-                    <Icon className="w-5 h-5" />
+                  <div className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 flex items-center justify-center mb-3 shadow-2xs">
+                    <Icon className="w-4 h-4 text-slate-600" />
                   </div>
-                  <h3 className="font-semibold text-base text-slate-800 mb-2 leading-snug">
+                  <h3 className="font-medium text-sm text-slate-900 mb-1.5 leading-snug">
                     {r.title}
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed font-normal">
